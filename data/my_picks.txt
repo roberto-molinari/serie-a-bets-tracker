@@ -1,0 +1,9 @@
+Picks for the Serie A matches on 5/10:
+
+Verona/Como: Como ML -240
+Cremonese/Pisa: Pisa ML +415
+Fiorentina/Genoa: Draw +240
+Parma/Roma: Parma ML +550
+Milan/Atalanta: Atalanta ML +260
+
+Notes: biggest model edges are Pisa and Atalanta, then Parma. The tightest edge is Fiorentina/Genoa draw.

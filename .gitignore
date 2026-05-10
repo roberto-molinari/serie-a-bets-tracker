@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+.venv/
+venv/
+ENV/
+env/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project data (local state - can re-enable if you want to track example data)
+# data/ai_pick_cache.json
+# data/posted_picks.json
+
+# Test artifacts
+.coverage
+htmlcov/
