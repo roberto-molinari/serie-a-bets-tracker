@@ -356,11 +356,88 @@ class TestDryRunModes(unittest.TestCase):
         self.assertFalse(items[0]["scored"])
         self.assertNotIn("result", items[0])
 
+    def test_publish_dry_run_uses_picks_section_for_auto_scoring(self) -> None:
+        fixture = tool.Fixture(
+            fixture_id="106",
+            date_utc="2026-05-08T18:45:00Z",
+            home="Napoli",
+            away="Bologna",
+            home_score=None,
+            away_score=None,
+            state="pre",
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text(
+                "My picks today:\n\n"
+                "Napoli looks strong at home.\n"
+                "\n"
+                "[PICKS]\n"
+                "Napoli vs Bologna = AWAY\n"
+                "[/PICKS]\n",
+                encoding="utf-8",
+            )
+            saved: dict[str, list[dict]] = {}
+            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+
+            with (
+                patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
+                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
+                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
+                patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
+                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+            ):
+                tool.publish_for_day(args)
+
+        # Verify my_pick is set to the 1X2 code from [PICKS] section
+        self.assertEqual(saved["items"][0]["my_pick"], "AWAY")
+        # Verify my_pick_text is empty (since we're using structured [PICKS])
+        self.assertEqual(saved["items"][0]["my_pick_text"], "")
+
+    def test_publish_dry_run_matches_picks_section_with_team_prefix_variants(self) -> None:
+        fixture = tool.Fixture(
+            fixture_id="107",
+            date_utc="2026-05-08T18:45:00Z",
+            home="AC Milan",
+            away="AS Roma",
+            home_score=None,
+            away_score=None,
+            state="pre",
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text(
+                "Matchday notes for my post.\n\n"
+                "[PICKS]\n"
+                "Milan vs Roma = HOME\n"
+                "[/PICKS]\n",
+                encoding="utf-8",
+            )
+            saved: dict[str, list[dict]] = {}
+            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+
+            with (
+                patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
+                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
+                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
+                patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
+                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+            ):
+                tool.publish_for_day(args)
+
+        self.assertEqual(saved["items"][0]["my_pick"], "HOME")
+
+
 
 class TestParser(unittest.TestCase):
     def test_publish_and_score_support_dry_run(self) -> None:
         parser = tool.build_parser()
-
         publish_args = parser.parse_args(["publish", "--day", "today", "--dry-run"])
         score_args = parser.parse_args(["score", "--day", "yesterday", "--dry-run"])
 
@@ -376,6 +453,11 @@ class TestParser(unittest.TestCase):
         parser = tool.build_parser()
         publish_args = parser.parse_args(["publish", "--day", "today", "--picks-file", "data/picks.txt"])
         self.assertEqual(publish_args.picks_file, "data/picks.txt")
+
+    def test_publish_supports_yesterday(self) -> None:
+        parser = tool.build_parser()
+        publish_args = parser.parse_args(["publish", "--day", "yesterday"])
+        self.assertEqual(publish_args.day, "yesterday")
 
 
 if __name__ == "__main__":

@@ -16,7 +16,7 @@ This workspace now includes two scripts:
 4. Posts your pick as a Bluesky post.
 5. Posts AI picks as a reply to your post.
 6. Saves thread metadata in `data/posted_picks.json`.
-7. Later, posts a score update reply for tracked picks (`score` command).
+7. Later, posts one daily scoreboard reply for tracked picks (`score` command).
 
 ## Requirements
 
@@ -68,6 +68,7 @@ python3 serie_a_bluesky_tool.py fixtures --day tomorrow
 
 ```bash
 python3 serie_a_bluesky_tool.py publish --day today
+python3 serie_a_bluesky_tool.py publish --day yesterday
 ```
 
 Test mode (no posting):
@@ -113,6 +114,22 @@ Lazio vs Internazionale=AWAY
 ```
 
 Then run:
+For automatic scoring of your picks, include a `[PICKS]` section with explicit 1X2 codes:
+
+```text
+My picks for today:
+I like Napoli at home, their form is strong.
+Bologna has been playing well away recently.
+
+[PICKS]
+Napoli vs Bologna = HOME
+Juventus vs Roma = AWAY
+[/PICKS]
+```
+
+The `[PICKS]` section is automatically removed from the Bluesky post (only the narrative text above it is posted), but the 1X2 codes are extracted and used for automatic scoring.
+
+Then run:
 
 ```bash
 python3 serie_a_bluesky_tool.py publish --day today --dry-run --picks-file data/my_picks.txt
@@ -128,7 +145,9 @@ When `--picks-file` is used, `publish` creates:
 When your picks-file text is not a strict 1X2 value (`HOME`/`DRAW`/`AWAY`), it is posted as-is on Bluesky and your personal pick is marked as unavailable for automatic result scoring.
 
 AI reply previews/posts are shown with human-readable pick text (for example, `Napoli to win`, `Draw`) rather than only 1X2 codes.
+**Note on scoring:** If you include a `[PICKS]` section with explicit 1X2 codes (HOME/DRAW/AWAY), your picks will be automatically scored when you run `score` after the matches finish. If you don't include a `[PICKS]` section, your freeform picks text is posted as-is on Bluesky, but automatic scoring is not available for your picks.
 
+AI reply previews/posts are shown with human-readable pick text (for example, `Napoli to win`, `Draw`) rather than only 1X2 codes.
 ### Score yesterday's picks and post updates
 
 ```bash
@@ -141,7 +160,9 @@ Test mode (no posting):
 python3 serie_a_bluesky_tool.py score --day yesterday --dry-run
 ```
 
-With `--dry-run`, it prints score-reply previews without posting and without marking tracked picks as scored.
+When all tracked fixtures for that day are final, `score` posts one scoreboard reply to the existing thread, ordered as Minvest, Gemini, Claude, ChatGPT.
+
+With `--dry-run`, it prints the scoreboard preview without posting and without marking tracked picks as scored.
 
 ## Notes and current assumptions
 

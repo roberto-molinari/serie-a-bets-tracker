@@ -1,9 +1,9 @@
-Picks for the Serie A matches on 5/10:
+Minvest's value pick for the one match today (5/11)
 
-Verona/Como: Como ML -240
-Cremonese/Pisa: Pisa ML +415
-Fiorentina/Genoa: Draw +240
-Parma/Roma: Parma ML +550
-Milan/Atalanta: Atalanta ML +260
+Napoli/Bologna: Bologna +1 (-112)
 
-Notes: biggest model edges are Pisa and Atalanta, then Parma. The tightest edge is Fiorentina/Genoa draw.
+Note that our model actually liked Bologna ML in terms of edge v. the book, but that feels like a bridge too far so taking the goal
+
+[PICKS]
+Napoli vs Bologna = AWAY
+[/PICKS]

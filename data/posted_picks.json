@@ -4,88 +4,8 @@
     "fixture_date": "2026-05-11",
     "home": "Napoli",
     "away": "Bologna",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Napoli has strong home form and higher league standing",
-        "confidence": 8,
-        "available": true
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Napoli strong at home, Bologna inconsistent away, value on hosts at reasonable odds",
-        "confidence": 68,
-        "available": true
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Bologna is in superior form and highly motivated for Champions League qualification, while Napoli has been inconsistent.",
-        "confidence": 0,
-        "available": true
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737135",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737135",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737135",
-    "fixture_date": "2026-05-11",
-    "home": "Napoli",
-    "away": "Bologna",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Napoli has strong home form and higher league standing",
-        "confidence": 8,
-        "available": true
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Napoli strong at home, Bologna inconsistent away, value on hosts at reasonable odds",
-        "confidence": 68,
-        "available": true
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Bologna is in superior form and highly motivated for Champions League qualification, while Napoli has been inconsistent.",
-        "confidence": 0,
-        "available": true
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737135",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737135",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737135",
-    "fixture_date": "2026-05-11",
-    "home": "Napoli",
-    "away": "Bologna",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
     "ai_picks": {
       "chatgpt": {
         "pick": "HOME",
@@ -113,11 +33,871 @@
       }
     },
     "root_post": {
-      "uri": "dryrun://root/737135",
+      "uri": "dryrun://root/2026-05-11",
       "cid": "dryrun-root-cid"
     },
     "ai_reply_post": {
-      "uri": "dryrun://reply/737135",
+      "uri": "dryrun://reply/2026-05-11",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737139",
+    "fixture_date": "2026-05-10",
+    "home": "Hellas Verona",
+    "away": "Como",
+    "my_pick": "",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona has stronger home performance compared to Como.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
+        "confidence": 58,
+        "available": true,
+        "pick_text": "Como to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737141",
+    "fixture_date": "2026-05-10",
+    "home": "Cremonese",
+    "away": "Pisa",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has home advantage and better recent form",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Pisa to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737140",
+    "fixture_date": "2026-05-10",
+    "home": "Fiorentina",
+    "away": "Genoa",
+    "my_pick": "DRAW",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina has a stronger home record and better current form.",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "claude": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
+        "confidence": 72,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737134",
+    "fixture_date": "2026-05-10",
+    "home": "Parma",
+    "away": "AS Roma",
+    "my_pick": "",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma is stronger and likely to win away",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "gemini": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737136",
+    "fixture_date": "2026-05-10",
+    "home": "AC Milan",
+    "away": "Atalanta",
+    "my_pick": "",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "AC Milan has strong home performance and better squad depth",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AC Milan to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Atalanta to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
+        "confidence": 65,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737139",
+    "fixture_date": "2026-05-10",
+    "home": "Hellas Verona",
+    "away": "Como",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona has stronger home performance compared to Como.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
+        "confidence": 58,
+        "available": true,
+        "pick_text": "Como to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737141",
+    "fixture_date": "2026-05-10",
+    "home": "Cremonese",
+    "away": "Pisa",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has home advantage and better recent form",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Pisa to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737140",
+    "fixture_date": "2026-05-10",
+    "home": "Fiorentina",
+    "away": "Genoa",
+    "my_pick": "DRAW",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina has a stronger home record and better current form.",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "claude": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
+        "confidence": 72,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737134",
+    "fixture_date": "2026-05-10",
+    "home": "Parma",
+    "away": "AS Roma",
+    "my_pick": "HOME",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma is stronger and likely to win away",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "gemini": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737136",
+    "fixture_date": "2026-05-10",
+    "home": "AC Milan",
+    "away": "Atalanta",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "AC Milan has strong home performance and better squad depth",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AC Milan to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Atalanta to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
+        "confidence": 65,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737139",
+    "fixture_date": "2026-05-10",
+    "home": "Hellas Verona",
+    "away": "Como",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona has stronger home performance compared to Como.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
+        "confidence": 58,
+        "available": true,
+        "pick_text": "Como to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737141",
+    "fixture_date": "2026-05-10",
+    "home": "Cremonese",
+    "away": "Pisa",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has home advantage and better recent form",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Pisa to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737140",
+    "fixture_date": "2026-05-10",
+    "home": "Fiorentina",
+    "away": "Genoa",
+    "my_pick": "DRAW",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina has a stronger home record and better current form.",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "claude": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
+        "confidence": 72,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737134",
+    "fixture_date": "2026-05-10",
+    "home": "Parma",
+    "away": "AS Roma",
+    "my_pick": "HOME",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma is stronger and likely to win away",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "gemini": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737136",
+    "fixture_date": "2026-05-10",
+    "home": "AC Milan",
+    "away": "Atalanta",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "AC Milan has strong home performance and better squad depth",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AC Milan to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Atalanta to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
+        "confidence": 65,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737139",
+    "fixture_date": "2026-05-10",
+    "home": "Hellas Verona",
+    "away": "Como",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona has stronger home performance compared to Como.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
+        "confidence": 58,
+        "available": true,
+        "pick_text": "Como to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Hellas Verona to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737141",
+    "fixture_date": "2026-05-10",
+    "home": "Cremonese",
+    "away": "Pisa",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has home advantage and better recent form",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Pisa to win"
+      },
+      "gemini": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Cremonese to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737140",
+    "fixture_date": "2026-05-10",
+    "home": "Fiorentina",
+    "away": "Genoa",
+    "my_pick": "DRAW",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina has a stronger home record and better current form.",
+        "confidence": 7,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "claude": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
+        "confidence": 72,
+        "available": true,
+        "pick_text": "Fiorentina to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737134",
+    "fixture_date": "2026-05-10",
+    "home": "Parma",
+    "away": "AS Roma",
+    "my_pick": "HOME",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma is stronger and likely to win away",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      },
+      "gemini": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AS Roma to win"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
+      "cid": "dryrun-reply-cid"
+    },
+    "scored": false
+  },
+  {
+    "fixture_id": "737136",
+    "fixture_date": "2026-05-10",
+    "home": "AC Milan",
+    "away": "Atalanta",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
+    "ai_picks": {
+      "chatgpt": {
+        "pick": "HOME",
+        "market": "1X2",
+        "reason": "AC Milan has strong home performance and better squad depth",
+        "confidence": 0,
+        "available": true,
+        "pick_text": "AC Milan to win"
+      },
+      "claude": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
+        "confidence": 62,
+        "available": true,
+        "pick_text": "Atalanta to win"
+      },
+      "gemini": {
+        "pick": "DRAW",
+        "market": "1X2",
+        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
+        "confidence": 65,
+        "available": true,
+        "pick_text": "Draw"
+      }
+    },
+    "root_post": {
+      "uri": "dryrun://root/2026-05-10",
+      "cid": "dryrun-root-cid"
+    },
+    "ai_reply_post": {
+      "uri": "dryrun://reply/2026-05-10",
       "cid": "dryrun-reply-cid"
     },
     "scored": false
@@ -127,21 +907,21 @@
     "fixture_date": "2026-05-11",
     "home": "Napoli",
     "away": "Bologna",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
+    "my_pick": "AWAY",
+    "my_pick_text": "",
     "ai_picks": {
       "chatgpt": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Napoli has strong home form and is favored to win against Bologna.",
-        "confidence": 85,
+        "reason": "Napoli has strong home form and higher league standing",
+        "confidence": 8,
         "available": true,
         "pick_text": "Napoli to win"
       },
       "claude": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Napoli strong at home, Bologna inconsistent away, value in home win given recent Napoli form and squad quality",
+        "reason": "Napoli strong at home, Bologna inconsistent away, value on hosts at reasonable odds",
         "confidence": 68,
         "available": true,
         "pick_text": "Napoli to win"
@@ -149,1954 +929,105 @@
       "gemini": {
         "pick": "AWAY",
         "market": "1X2",
-        "reason": "Bologna are in exceptional form and pushing for Champions League, displaying strong organization and consistent results. Napoli have been highly inconsistent at home and struggled defensively this season.",
+        "reason": "Bologna is in superior form and highly motivated for Champions League qualification, while Napoli has been inconsistent.",
         "confidence": 0,
         "available": true,
         "pick_text": "Bologna to win"
       }
     },
     "root_post": {
-      "uri": "dryrun://root/737135",
+      "uri": "dryrun://root/2026-05-11",
       "cid": "dryrun-root-cid"
     },
     "ai_reply_post": {
-      "uri": "dryrun://reply/737135",
+      "uri": "dryrun://reply/2026-05-11",
       "cid": "dryrun-reply-cid"
     },
     "scored": false
   },
   {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737139",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737139",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "Verona/Como: Como ML -240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737141",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737141",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "Cremonese/Pisa: Pisa ML +415",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737140",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737140",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "Fiorentina/Genoa: Draw +240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737134",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737134",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "Parma/Roma: Parma ML +550",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737136",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737136",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737139",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737139",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "Verona/Como: Como ML -240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737141",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737141",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "Cremonese/Pisa: Pisa ML +415",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737140",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737140",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "Fiorentina/Genoa: Draw +240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737134",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737134",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "Parma/Roma: Parma ML +550",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737136",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737136",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737139",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737139",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "Verona/Como: Como ML -240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737141",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737141",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "Cremonese/Pisa: Pisa ML +415",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737140",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737140",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "Fiorentina/Genoa: Draw +240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737134",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737134",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "Parma/Roma: Parma ML +550",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737136",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737136",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737139",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737139",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "Verona/Como: Como ML -240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737141",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737141",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "Cremonese/Pisa: Pisa ML +415",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737140",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737140",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "Fiorentina/Genoa: Draw +240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737134",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737134",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "Parma/Roma: Parma ML +550",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/737136",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/737136",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "Picks for the Serie A matches on 5/10:",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "Verona/Como: Como ML -240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "Cremonese/Pisa: Pisa ML +415",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "Fiorentina/Genoa: Draw +240",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "Parma/Roma: Parma ML +550",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
+    "fixture_id": "737135",
+    "fixture_date": "2026-05-11",
+    "home": "Napoli",
+    "away": "Bologna",
+    "my_pick": "AWAY",
     "my_pick_text": "",
     "ai_picks": {
       "chatgpt": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
+        "reason": "Napoli has strong home form and higher league standing",
+        "confidence": 8,
         "available": true,
-        "pick_text": "Hellas Verona to win"
+        "pick_text": "Napoli to win"
       },
       "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
+        "reason": "Napoli strong at home, Bologna inconsistent away, value on hosts at reasonable odds",
+        "confidence": 68,
+        "available": true,
+        "pick_text": "Napoli to win"
+      },
+      "gemini": {
+        "pick": "AWAY",
+        "market": "1X2",
+        "reason": "Bologna is in superior form and highly motivated for Champions League qualification, while Napoli has been inconsistent.",
         "confidence": 0,
         "available": true,
-        "pick_text": "Hellas Verona to win"
+        "pick_text": "Bologna to win"
       }
     },
     "root_post": {
-      "uri": "dryrun://root/2026-05-10",
+      "uri": "dryrun://root/2026-05-11",
       "cid": "dryrun-root-cid"
     },
     "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
+      "uri": "dryrun://reply/2026-05-11",
       "cid": "dryrun-reply-cid"
     },
     "scored": false
   },
   {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
+    "fixture_id": "737135",
+    "fixture_date": "2026-05-11",
+    "home": "Napoli",
+    "away": "Bologna",
+    "my_pick": "AWAY",
     "my_pick_text": "",
     "ai_picks": {
       "chatgpt": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
+        "reason": "Napoli has strong home form and higher league standing",
+        "confidence": 8,
         "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
+        "pick_text": "Napoli to win"
       },
       "claude": {
         "pick": "HOME",
         "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
+        "reason": "Napoli strong at home, Bologna inconsistent away, value on hosts at reasonable odds",
+        "confidence": 68,
         "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
+        "pick_text": "Napoli to win"
       },
       "gemini": {
         "pick": "AWAY",
         "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
+        "reason": "Bologna is in superior form and highly motivated for Champions League qualification, while Napoli has been inconsistent.",
         "confidence": 0,
         "available": true,
-        "pick_text": "AS Roma to win"
+        "pick_text": "Bologna to win"
       }
     },
     "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
+      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlluvu7qkw2u",
+      "cid": "bafyreibvv74tz45t725miwemm3xj5paxu2qe2o5g43znucienmjvq6ntp4"
     },
     "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "dryrun://root/2026-05-10",
-      "cid": "dryrun-root-cid"
-    },
-    "ai_reply_post": {
-      "uri": "dryrun://reply/2026-05-10",
-      "cid": "dryrun-reply-cid"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeulv7f2a",
-      "cid": "bafyreifthkdw77wiakv66tbxywumwrul5e7pyjul3lpljrdlh2pozvuxai"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeuqryq2v",
-      "cid": "bafyreicqixiqaobkvv476oyn4ruovarnutgup7gisz7hcdihcipu7ppche"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeulv7f2a",
-      "cid": "bafyreifthkdw77wiakv66tbxywumwrul5e7pyjul3lpljrdlh2pozvuxai"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeuqryq2v",
-      "cid": "bafyreicqixiqaobkvv476oyn4ruovarnutgup7gisz7hcdihcipu7ppche"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeulv7f2a",
-      "cid": "bafyreifthkdw77wiakv66tbxywumwrul5e7pyjul3lpljrdlh2pozvuxai"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeuqryq2v",
-      "cid": "bafyreicqixiqaobkvv476oyn4ruovarnutgup7gisz7hcdihcipu7ppche"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeulv7f2a",
-      "cid": "bafyreifthkdw77wiakv66tbxywumwrul5e7pyjul3lpljrdlh2pozvuxai"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeuqryq2v",
-      "cid": "bafyreicqixiqaobkvv476oyn4ruovarnutgup7gisz7hcdihcipu7ppche"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeulv7f2a",
-      "cid": "bafyreifthkdw77wiakv66tbxywumwrul5e7pyjul3lpljrdlh2pozvuxai"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:lq63nuwzvtssvpbrxcm5udnq/app.bsky.feed.post/3mlhjeuqryq2v",
-      "cid": "bafyreicqixiqaobkvv476oyn4ruovarnutgup7gisz7hcdihcipu7ppche"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737139",
-    "fixture_date": "2026-05-10",
-    "home": "Hellas Verona",
-    "away": "Como",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona has stronger home performance compared to Como.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Como have shown better recent form and attacking quality, while Hellas Verona struggle defensively at home this season, offering value on the away side at likely inflated odds favoring the home team",
-        "confidence": 58,
-        "available": true,
-        "pick_text": "Como to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Hellas Verona (Serie A) has significant quality advantage and home field over Como (Serie B). The market often slightly undervalues strong favorites in cup matches.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Hellas Verona to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjillhjn2h",
-      "cid": "bafyreiclv47mign7ycrokzvakpvpna36albtlb462qu6r6kel34wuk67xa"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjilntrf2a",
-      "cid": "bafyreicazfva67bdpyddqy4arrwagoyb3hqoymrjaxh7s7dcs4b33r3qfq"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737141",
-    "fixture_date": "2026-05-10",
-    "home": "Cremonese",
-    "away": "Pisa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has home advantage and better recent form",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Pisa has been one of the strongest sides in Serie B this season with better form and attacking quality than Cremonese, offering value on the away win",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Pisa to win"
-      },
-      "gemini": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Cremonese has strong home form and is a promotion contender against an inconsistent Pisa side.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Cremonese to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjillhjn2h",
-      "cid": "bafyreiclv47mign7ycrokzvakpvpna36albtlb462qu6r6kel34wuk67xa"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjilntrf2a",
-      "cid": "bafyreicazfva67bdpyddqy4arrwagoyb3hqoymrjaxh7s7dcs4b33r3qfq"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737140",
-    "fixture_date": "2026-05-10",
-    "home": "Fiorentina",
-    "away": "Genoa",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina has a stronger home record and better current form.",
-        "confidence": 7,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "claude": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "Fiorentina significantly stronger at home, Genoa struggling away and in relegation battle, clear quality gap favors hosts",
-        "confidence": 72,
-        "available": true,
-        "pick_text": "Fiorentina to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Genoa's defensive resilience often makes them tough to beat, even for stronger home teams like Fiorentina, leading to potential draw value.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjillhjn2h",
-      "cid": "bafyreiclv47mign7ycrokzvakpvpna36albtlb462qu6r6kel34wuk67xa"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjilntrf2a",
-      "cid": "bafyreicazfva67bdpyddqy4arrwagoyb3hqoymrjaxh7s7dcs4b33r3qfq"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737134",
-    "fixture_date": "2026-05-10",
-    "home": "Parma",
-    "away": "AS Roma",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma is stronger and likely to win away",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Roma are significantly stronger than relegated Parma and should win away despite inconsistent form this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      },
-      "gemini": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "AS Roma possess superior squad quality and recent form compared to Parma.",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AS Roma to win"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjillhjn2h",
-      "cid": "bafyreiclv47mign7ycrokzvakpvpna36albtlb462qu6r6kel34wuk67xa"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjilntrf2a",
-      "cid": "bafyreicazfva67bdpyddqy4arrwagoyb3hqoymrjaxh7s7dcs4b33r3qfq"
-    },
-    "scored": false
-  },
-  {
-    "fixture_id": "737136",
-    "fixture_date": "2026-05-10",
-    "home": "AC Milan",
-    "away": "Atalanta",
-    "my_pick": "",
-    "my_pick_text": "",
-    "ai_picks": {
-      "chatgpt": {
-        "pick": "HOME",
-        "market": "1X2",
-        "reason": "AC Milan has strong home performance and better squad depth",
-        "confidence": 0,
-        "available": true,
-        "pick_text": "AC Milan to win"
-      },
-      "claude": {
-        "pick": "AWAY",
-        "market": "1X2",
-        "reason": "Atalanta in outstanding form, strong Champions League campaign, better defensive structure and attacking consistency than inconsistent AC Milan this season",
-        "confidence": 62,
-        "available": true,
-        "pick_text": "Atalanta to win"
-      },
-      "gemini": {
-        "pick": "DRAW",
-        "market": "1X2",
-        "reason": "Evenly matched teams with strong defensive capabilities; a stalemate is a common outcome in such competitive fixtures.",
-        "confidence": 65,
-        "available": true,
-        "pick_text": "Draw"
-      }
-    },
-    "root_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjillhjn2h",
-      "cid": "bafyreiclv47mign7ycrokzvakpvpna36albtlb462qu6r6kel34wuk67xa"
-    },
-    "ai_reply_post": {
-      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlhjilntrf2a",
-      "cid": "bafyreicazfva67bdpyddqy4arrwagoyb3hqoymrjaxh7s7dcs4b33r3qfq"
+      "uri": "at://did:plc:674t4xpceo3xuhnrx65nxrkx/app.bsky.feed.post/3mlluvud2kb2c",
+      "cid": "bafyreibl2vejvq7rkzdcg3qkqkxurj2kwgu5kut6mytttauis5xd747vcq"
     },
     "scored": false
   }
