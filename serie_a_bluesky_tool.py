@@ -961,19 +961,21 @@ def score_for_day(args: argparse.Namespace) -> None:
         if current is None:
             seen[fixture_id] = item
         else:
-            # Prefer entry with non-empty my_pick over empty my_pick
-            current_my_pick = str(current.get("my_pick", "")).strip()
-            item_my_pick = str(item.get("my_pick", "")).strip()
-            
-            if item_my_pick and not current_my_pick:
-                # Item has a valid pick, current doesn't - use item
+            current_root_uri = str(current.get("root_post", {}).get("uri", ""))
+            item_root_uri = str(item.get("root_post", {}).get("uri", ""))
+            current_is_real = current_root_uri.startswith("at://")
+            item_is_real = item_root_uri.startswith("at://")
+
+            if item_is_real and not current_is_real:
+                # Prefer real posted entry over dry-run placeholder
                 seen[fixture_id] = item
-            elif current_my_pick or not item_my_pick:
-                # Keep current if it has a valid pick, or both are empty
-                pass
-            else:
-                # Both empty, keep current (earlier is fine)
-                pass
+            elif current_is_real or not item_is_real:
+                # Keep current if it has a real URI, or both are dry-run
+                # Among same type, also prefer non-empty my_pick
+                current_my_pick = str(current.get("my_pick", "")).strip()
+                item_my_pick = str(item.get("my_pick", "")).strip()
+                if item_my_pick and not current_my_pick:
+                    seen[fixture_id] = item
     day_items = list(seen.values())
 
     fixtures = {f.fixture_id: f for f in fetch_serie_a_fixtures(target_day)}
