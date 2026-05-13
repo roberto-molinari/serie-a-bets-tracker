@@ -1032,16 +1032,19 @@ def score_for_day(args: argparse.Namespace) -> None:
     root_item = final_rows[0]["item"]
     root_uri = str(root_item["root_post"]["uri"])
     root_cid = str(root_item["root_post"]["cid"])
+    ai_reply_uri = str(root_item["ai_reply_post"]["uri"])
+    ai_reply_cid = str(root_item["ai_reply_post"]["cid"])
     root_url = at_uri_to_post_url(root_uri)
+    ai_reply_url = at_uri_to_post_url(ai_reply_uri)
     if dry_run:
         score_post = {"uri": f"dryrun://score/{target_day.isoformat()}", "cid": "dryrun-score-cid"}
         print("\n[DRY-RUN] Scoreboard reply preview:")
         print(clamp_post(score_text))
-        print("[DRY-RUN] Reply target (existing thread root):")
-        if root_url:
-            print(f"- post_url: {root_url}")
+        print("[DRY-RUN] Reply target (AI picks reply):")
+        if ai_reply_url:
+            print(f"- post_url: {ai_reply_url}")
         else:
-            print("- post_url: unavailable (tracked root post is a dry-run placeholder, not a real Bluesky post)")
+            print("- post_url: unavailable (tracked AI reply post is a dry-run placeholder, not a real Bluesky post)")
         print(f"[DRY-RUN] Would create scoreboard reply post: {score_post['uri']}")
     else:
         score_post = bsky_create_post(
@@ -1050,8 +1053,8 @@ def score_for_day(args: argparse.Namespace) -> None:
             reply_to={
                 "root_uri": root_uri,
                 "root_cid": root_cid,
-                "parent_uri": root_uri,
-                "parent_cid": root_cid,
+                "parent_uri": ai_reply_uri,
+                "parent_cid": ai_reply_cid,
             },
         )
 
