@@ -22,7 +22,15 @@ This workspace now includes two scripts:
 
 - Python 3.10+
 
-No third-party Python package is required for this script.
+Third-party Python package for X posting:
+
+- `tweepy` (required only when using `--platform x` or `--platform both`)
+
+Install it with:
+
+```bash
+python3 -m pip install tweepy
+```
 
 ## Environment variables
 
@@ -36,6 +44,11 @@ export ANTHROPIC_API_KEY="..."
 export GEMINI_API_KEY="..."
 export BSKY_HANDLE="your-handle.bsky.social"
 export BSKY_APP_PASSWORD="xxxx-xxxx-xxxx-xxxx"
+export X_CONSUMER_KEY="..."
+export X_CONSUMER_SECRET="..."
+export X_ACCESS_TOKEN="..."
+export X_ACCESS_TOKEN_SECRET="..."
+export X_HANDLE="your_x_handle"
 ```
 
 To verify they are available in new terminals:
@@ -45,7 +58,15 @@ printenv OPENAI_API_KEY
 printenv ANTHROPIC_API_KEY
 printenv GEMINI_API_KEY
 printenv BSKY_HANDLE
+printenv X_CONSUMER_KEY
+printenv X_ACCESS_TOKEN
 ```
+
+X variable notes:
+
+- `X_CONSUMER_KEY`, `X_CONSUMER_SECRET`, `X_ACCESS_TOKEN`, and `X_ACCESS_TOKEN_SECRET` are required for X posting.
+- `X_HANDLE` is optional and is only used to print friendly tweet URLs in command output.
+- If you run Bluesky-only (`--platform bluesky`), X variables are not required.
 
 Optional model overrides:
 
@@ -71,6 +92,19 @@ python3 serie_a_bluesky_tool.py publish --day today
 python3 serie_a_bluesky_tool.py publish --day yesterday
 ```
 
+Select posting platform:
+
+```bash
+# Bluesky only
+python3 serie_a_bluesky_tool.py publish --day today --platform bluesky
+
+# X only
+python3 serie_a_bluesky_tool.py publish --day today --platform x
+
+# Both (default)
+python3 serie_a_bluesky_tool.py publish --day today --platform both
+```
+
 Test mode (no posting):
 
 ```bash
@@ -81,11 +115,13 @@ The command will:
 
 - show AI picks in terminal,
 - ask for your pick per match,
-- create Bluesky thread posts,
+- create thread posts on the selected platform(s),
 - persist tracking data to `data/posted_picks.json`.
 - cache AI provider responses in `data/ai_pick_cache.json` for reuse on repeated test runs.
 
-With `--dry-run`, it prints post previews and still records generated picks in `data/posted_picks.json`, but does not create Bluesky posts.
+With `--dry-run`, it prints post previews and still records generated picks in `data/posted_picks.json`, but does not create posts.
+
+With `--platform x` or `--platform both`, `publish` creates an X root post and then an X AI reply to that root.
 
 If any of the three AI providers fails to return a pick for any fixture, `publish` aborts before prompting you for picks and before creating any posts, so you do not end up with partial AI coverage.
 
@@ -147,11 +183,23 @@ When your picks-file text is not a strict 1X2 value (`HOME`/`DRAW`/`AWAY`), it i
 AI reply previews/posts are shown with human-readable pick text (for example, `Napoli to win`, `Draw`) rather than only 1X2 codes.
 **Note on scoring:** If you include a `[PICKS]` section with explicit 1X2 codes (HOME/DRAW/AWAY), your picks will be automatically scored when you run `score` after the matches finish. If you don't include a `[PICKS]` section, your freeform picks text is posted as-is on Bluesky, but automatic scoring is not available for your picks.
 
-AI reply previews/posts are shown with human-readable pick text (for example, `Napoli to win`, `Draw`) rather than only 1X2 codes.
 ### Score yesterday's picks and post updates
 
 ```bash
 python3 serie_a_bluesky_tool.py score --day yesterday
+```
+
+Select posting platform:
+
+```bash
+# Bluesky only
+python3 serie_a_bluesky_tool.py score --day yesterday --platform bluesky
+
+# X only
+python3 serie_a_bluesky_tool.py score --day yesterday --platform x
+
+# Both (default)
+python3 serie_a_bluesky_tool.py score --day yesterday --platform both
 ```
 
 Test mode (no posting):
@@ -161,6 +209,8 @@ python3 serie_a_bluesky_tool.py score --day yesterday --dry-run
 ```
 
 When all tracked fixtures for that day are final, `score` posts one scoreboard reply to the existing thread, ordered as Minvest, Gemini, Claude, ChatGPT.
+
+For both Bluesky and X, the scoreboard reply is posted as a reply to the AI picks reply (not directly to the root post).
 
 With `--dry-run`, it prints the scoreboard preview without posting and without marking tracked picks as scored.
 
@@ -185,3 +235,41 @@ Run unit tests with:
 ```bash
 python3 -m unittest discover -s tests -p "test_*.py" -v
 ```
+
+### Test posting helper
+
+Use `test_posting.py` to run a mocked publish flow and quickly verify posting behavior for Bluesky and/or X.
+
+What it does:
+
+- Mocks fixtures and AI picks.
+- Runs one publish cycle through `serie_a_bluesky_tool.py`.
+- Supports dry-run previews and live posting.
+- Adds a unique timestamp suffix by default to avoid duplicate-post rejection on repeated X test runs.
+
+Examples:
+
+```bash
+# Dry-run to X only
+python3 test_posting.py --platform x --dry-run
+
+# Live post to X only
+python3 test_posting.py --platform x
+
+# Live post to both platforms
+python3 test_posting.py --platform both
+
+# Force a custom uniqueness suffix
+python3 test_posting.py --platform x --suffix smoke-test-1
+```
+
+Options:
+
+- `--platform`: `bluesky`, `x`, or `both` (default: `both`).
+- `--dry-run`: preview mode; no posts are created.
+- `--suffix`: optional text appended into mocked fixture content to guarantee unique post text.
+
+Environment variables:
+
+- For `--platform bluesky`: set `BSKY_HANDLE` and `BSKY_APP_PASSWORD`.
+- For `--platform x`: set `X_CONSUMER_KEY`, `X_CONSUMER_SECRET`, `X_ACCESS_TOKEN`, `X_ACCESS_TOKEN_SECRET`.

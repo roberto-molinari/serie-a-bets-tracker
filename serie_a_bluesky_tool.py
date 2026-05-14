@@ -480,6 +480,48 @@ def bsky_create_post(session: dict[str, str], text: str, reply_to: dict[str, str
     return {"uri": str(payload["uri"]), "cid": str(payload["cid"])}
 
 
+def x_create_client() -> Any:
+    """Create an authenticated X (Twitter) API v2 client."""
+    try:
+        import tweepy  # noqa: PLC0415
+    except ImportError:
+        raise SystemExit("tweepy is required for X posting. Install it with: pip install tweepy")
+
+    consumer_key = os.getenv("X_CONSUMER_KEY")
+    consumer_secret = os.getenv("X_CONSUMER_SECRET")
+    access_token = os.getenv("X_ACCESS_TOKEN")
+    access_token_secret = os.getenv("X_ACCESS_TOKEN_SECRET")
+    if not all([consumer_key, consumer_secret, access_token, access_token_secret]):
+        raise SystemExit(
+            "X API credentials are required: X_CONSUMER_KEY, X_CONSUMER_SECRET, "
+            "X_ACCESS_TOKEN, X_ACCESS_TOKEN_SECRET"
+        )
+    return tweepy.Client(
+        consumer_key=consumer_key,
+        consumer_secret=consumer_secret,
+        access_token=access_token,
+        access_token_secret=access_token_secret,
+    )
+
+
+def x_create_post(client: Any, text: str, reply_to_tweet_id: str | None = None) -> dict[str, str]:
+    """Post a tweet to X. Returns {"id": tweet_id}."""
+    clamped = clamp_post(text, max_chars=280)
+    kwargs: dict[str, Any] = {"text": clamped}
+    if reply_to_tweet_id:
+        kwargs["in_reply_to_tweet_id"] = reply_to_tweet_id
+    response = client.create_tweet(**kwargs)
+    return {"id": str(response.data["id"])}
+
+
+def x_post_url(tweet_id: str) -> str:
+    handle = os.getenv("X_HANDLE", "")
+    if not handle or not tweet_id:
+        return ""
+    handle = handle.lstrip("@")
+    return f"https://x.com/{handle}/status/{tweet_id}"
+
+
 def outcome_from_scores(home_score: int | None, away_score: int | None) -> str | None:
     if home_score is None or away_score is None:
         return None
@@ -782,8 +824,16 @@ def publish_for_day(args: argparse.Namespace) -> None:
     if use_cache and cache_changed:
         save_pick_cache(pick_cache)
 
+    platform = getattr(args, "platform", "both")
+    post_bluesky = platform in ("bluesky", "both")
+    post_x = platform in ("x", "both")
+
     if not dry_run:
-        session = bsky_login()
+        session = bsky_login() if post_bluesky else None
+        x_client = x_create_client() if post_x else None
+    else:
+        session = None
+        x_client = None
 
     if picks_data is not None:
         structured_picks = picks_data.get("structured_picks", {})
@@ -807,16 +857,19 @@ def publish_for_day(args: argparse.Namespace) -> None:
 
         if dry_run:
             root_post = {"uri": f"dryrun://root/{target_day.isoformat()}", "cid": "dryrun-root-cid"}
+            x_root_post = {"id": f"dryrun-x-root-{target_day.isoformat()}"}
             print("\n[DRY-RUN] ROOT POST (this is the main post):")
             print("----- ROOT POST TEXT START -----")
             print(clamp_post(root_text))
             print("----- ROOT POST TEXT END -----")
         else:
-            root_post = bsky_create_post(session, root_text)
+            root_post = bsky_create_post(session, root_text) if post_bluesky else {"uri": "", "cid": ""}
+            x_root_post = x_create_post(x_client, root_text) if post_x else {"id": ""}
 
         reply_text = build_aggregate_ai_reply([(f, g, c, m) for f, g, c, m, _, _ in picks_resolved])
         if dry_run:
             ai_reply = {"uri": f"dryrun://reply/{target_day.isoformat()}", "cid": "dryrun-reply-cid"}
+            x_ai_reply = {"id": f"dryrun-x-reply-{target_day.isoformat()}"}
             print("\n[DRY-RUN] REPLY POST (this is posted as a reply to the root):")
             print("----- REPLY POST TEXT START -----")
             print(clamp_post(reply_text))
@@ -831,7 +884,8 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     "parent_uri": root_post["uri"],
                     "parent_cid": root_post["cid"],
                 },
-            )
+            ) if post_bluesky else {"uri": "", "cid": ""}
+            x_ai_reply = x_create_post(x_client, reply_text, reply_to_tweet_id=x_root_post["id"] or None) if post_x else {"id": ""}
 
         for fixture, gpt_pick, claude_pick, gemini_pick, my_pick_text, my_pick_scoring in picks_resolved:
             tracking.append(
@@ -849,20 +903,30 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     },
                     "root_post": root_post,
                     "ai_reply_post": ai_reply,
+                    "x_root_post": x_root_post,
+                    "x_ai_reply_post": x_ai_reply,
                     "scored": False,
                 }
             )
 
         if dry_run:
-            print(f"[DRY-RUN] Would post root: {root_post['uri']}")
-            print(f"[DRY-RUN] Would post AI reply: {ai_reply['uri']}")
+            if post_bluesky:
+                print(f"[DRY-RUN] Would post Bluesky root: {root_post['uri']}")
+                print(f"[DRY-RUN] Would post Bluesky AI reply: {ai_reply['uri']}")
+            if post_x:
+                print(f"[DRY-RUN] Would post X root tweet (id: {x_root_post['id']})")
+                print(f"[DRY-RUN] Would post X AI reply tweet (id: {x_ai_reply['id']})")
         else:
-            print(f"Posted root: {root_post['uri']}")
-            print(f"Posted AI reply: {ai_reply['uri']}")
+            if post_bluesky:
+                print(f"Posted Bluesky root: {root_post['uri']}")
+                print(f"Posted Bluesky AI reply: {ai_reply['uri']}")
+            if post_x:
+                print(f"Posted X root tweet: {x_post_url(x_root_post['id']) or x_root_post['id']}")
+                print(f"Posted X AI reply tweet: {x_post_url(x_ai_reply['id']) or x_ai_reply['id']}")
 
         save_tracking(tracking)
         if dry_run:
-            print("\nDone dry-run publish. No Bluesky posts were created.")
+            print("\nDone dry-run publish. No posts were created.")
         else:
             print("\nDone publishing picks.")
         return
@@ -879,12 +943,14 @@ def publish_for_day(args: argparse.Namespace) -> None:
         root_text = f"Serie A value pick - {fixture.home} vs {fixture.away}\n{my_pick_line}"
         if dry_run:
             root_post = {"uri": f"dryrun://root/{fixture.fixture_id}", "cid": "dryrun-root-cid"}
+            x_root_post = {"id": f"dryrun-x-root-{fixture.fixture_id}"}
             print("\n[DRY-RUN] ROOT POST (this is the main post):")
             print("----- ROOT POST TEXT START -----")
             print(clamp_post(root_text))
             print("----- ROOT POST TEXT END -----")
         else:
-            root_post = bsky_create_post(session, root_text)
+            root_post = bsky_create_post(session, root_text) if post_bluesky else {"uri": "", "cid": ""}
+            x_root_post = x_create_post(x_client, root_text) if post_x else {"id": ""}
 
         reply_text = (
             "AI value picks (1X2):\n"
@@ -895,6 +961,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
 
         if dry_run:
             ai_reply = {"uri": f"dryrun://reply/{fixture.fixture_id}", "cid": "dryrun-reply-cid"}
+            x_ai_reply = {"id": f"dryrun-x-reply-{fixture.fixture_id}"}
             print("\n[DRY-RUN] REPLY POST (this is posted as a reply to the root):")
             print("----- REPLY POST TEXT START -----")
             print(clamp_post(reply_text))
@@ -909,7 +976,8 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     "parent_uri": root_post["uri"],
                     "parent_cid": root_post["cid"],
                 },
-            )
+            ) if post_bluesky else {"uri": "", "cid": ""}
+            x_ai_reply = x_create_post(x_client, reply_text, reply_to_tweet_id=x_root_post["id"] or None) if post_x else {"id": ""}
 
         tracking.append(
             {
@@ -926,20 +994,30 @@ def publish_for_day(args: argparse.Namespace) -> None:
                 },
                 "root_post": root_post,
                 "ai_reply_post": ai_reply,
+                "x_root_post": x_root_post,
+                "x_ai_reply_post": x_ai_reply,
                 "scored": False,
             }
         )
 
         if dry_run:
-            print(f"[DRY-RUN] Would post root: {root_post['uri']}")
-            print(f"[DRY-RUN] Would post AI reply: {ai_reply['uri']}")
+            if post_bluesky:
+                print(f"[DRY-RUN] Would post Bluesky root: {root_post['uri']}")
+                print(f"[DRY-RUN] Would post Bluesky AI reply: {ai_reply['uri']}")
+            if post_x:
+                print(f"[DRY-RUN] Would post X root tweet (id: {x_root_post['id']})")
+                print(f"[DRY-RUN] Would post X AI reply tweet (id: {x_ai_reply['id']})")
         else:
-            print(f"Posted root: {root_post['uri']}")
-            print(f"Posted AI reply: {ai_reply['uri']}")
+            if post_bluesky:
+                print(f"Posted Bluesky root: {root_post['uri']}")
+                print(f"Posted Bluesky AI reply: {ai_reply['uri']}")
+            if post_x:
+                print(f"Posted X root tweet: {x_post_url(x_root_post['id']) or x_root_post['id']}")
+                print(f"Posted X AI reply tweet: {x_post_url(x_ai_reply['id']) or x_ai_reply['id']}")
 
     save_tracking(tracking)
     if dry_run:
-        print("\nDone dry-run publish. No Bluesky posts were created.")
+        print("\nDone dry-run publish. No posts were created.")
     else:
         print("\nDone publishing picks.")
 def score_for_day(args: argparse.Namespace) -> None:
@@ -1028,24 +1106,40 @@ def score_for_day(args: argparse.Namespace) -> None:
 
     score_text = build_scoreboard_reply(args.day, participant_rows)
 
-    session = None if dry_run else bsky_login()
+    platform = getattr(args, "platform", "both")
+    post_bluesky = platform in ("bluesky", "both")
+    post_x = platform in ("x", "both")
+
     root_item = final_rows[0]["item"]
     root_uri = str(root_item["root_post"]["uri"])
     root_cid = str(root_item["root_post"]["cid"])
     ai_reply_uri = str(root_item["ai_reply_post"]["uri"])
     ai_reply_cid = str(root_item["ai_reply_post"]["cid"])
+    x_ai_reply_id = str(root_item.get("x_ai_reply_post", {}).get("id", "")) or None
     root_url = at_uri_to_post_url(root_uri)
     ai_reply_url = at_uri_to_post_url(ai_reply_uri)
+
+    if not dry_run:
+        session = bsky_login() if post_bluesky else None
+        x_client = x_create_client() if post_x else None
+    else:
+        session = None
+        x_client = None
+
     if dry_run:
         score_post = {"uri": f"dryrun://score/{target_day.isoformat()}", "cid": "dryrun-score-cid"}
+        x_score_post = {"id": f"dryrun-x-score-{target_day.isoformat()}"}
         print("\n[DRY-RUN] Scoreboard reply preview:")
         print(clamp_post(score_text))
-        print("[DRY-RUN] Reply target (AI picks reply):")
-        if ai_reply_url:
-            print(f"- post_url: {ai_reply_url}")
-        else:
-            print("- post_url: unavailable (tracked AI reply post is a dry-run placeholder, not a real Bluesky post)")
-        print(f"[DRY-RUN] Would create scoreboard reply post: {score_post['uri']}")
+        if post_bluesky:
+            print("[DRY-RUN] Bluesky reply target (AI picks reply):")
+            if ai_reply_url:
+                print(f"- post_url: {ai_reply_url}")
+            else:
+                print("- post_url: unavailable (dry-run placeholder)")
+            print(f"[DRY-RUN] Would create Bluesky scoreboard reply: {score_post['uri']}")
+        if post_x:
+            print(f"[DRY-RUN] Would create X scoreboard reply (replying to tweet id: {x_ai_reply_id or 'none'})")
     else:
         score_post = bsky_create_post(
             session,
@@ -1056,7 +1150,8 @@ def score_for_day(args: argparse.Namespace) -> None:
                 "parent_uri": ai_reply_uri,
                 "parent_cid": ai_reply_cid,
             },
-        )
+        ) if post_bluesky else {"uri": "", "cid": ""}
+        x_score_post = x_create_post(x_client, score_text, reply_to_tweet_id=x_ai_reply_id) if post_x else {"id": ""}
 
         for row in final_rows:
             item = row["item"]
@@ -1068,14 +1163,18 @@ def score_for_day(args: argparse.Namespace) -> None:
                 "home_score": fixture.home_score,
                 "away_score": fixture.away_score,
                 "score_post": score_post,
+                "x_score_post": x_score_post,
                 "scored_at": iso_now(),
             }
 
-        print(f"Posted scoreboard reply: {score_post['uri']}")
+        if post_bluesky:
+            print(f"Posted Bluesky scoreboard reply: {score_post['uri']}")
+        if post_x:
+            print(f"Posted X scoreboard reply: {x_post_url(x_score_post['id']) or x_score_post['id']}")
 
     save_tracking(tracking)
     if dry_run:
-        print("Done dry-run scoring. No Bluesky posts were created and tracking was not marked scored.")
+        print("Done dry-run scoring. No posts were created and tracking was not marked scored.")
     else:
         print("Done scoring.")
 
@@ -1108,11 +1207,13 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--dry-run", action="store_true", help="Print post previews without posting to Bluesky")
     publish.add_argument("--no-cache", action="store_true", help="Disable local AI-pick cache and force fresh provider calls")
     publish.add_argument("--picks-file", help="Path to text file with your picks text. Supports keyed lines (fixture_id=...) and free-form lines in fixture order")
+    publish.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
     publish.set_defaults(func=publish_for_day)
 
     score = subparsers.add_parser("score", help="Post result score updates to existing threads")
     score.add_argument("--day", default="yesterday", choices=["yesterday", "today", "tomorrow"])
     score.add_argument("--dry-run", action="store_true", help="Print score reply previews without posting to Bluesky")
+    score.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
     score.set_defaults(func=score_for_day)
 
     return parser
