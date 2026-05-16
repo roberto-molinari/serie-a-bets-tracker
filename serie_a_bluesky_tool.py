@@ -186,6 +186,22 @@ def fetch_serie_a_fixtures(target_day: date) -> list[Fixture]:
     return fixtures
 
 
+def fixture_local_hour(fixture: Fixture) -> int:
+    raw = str(fixture.date_utc)
+    dt_utc = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+    return dt_utc.astimezone().hour
+
+
+def fixture_session_label(fixture: Fixture) -> str:
+    return "morning" if fixture_local_hour(fixture) < 12 else "afternoon"
+
+
+def filter_fixtures_by_session(fixtures: list[Fixture], session_filter: str) -> list[Fixture]:
+    if session_filter == "all":
+        return fixtures
+    return [f for f in fixtures if fixture_session_label(f) == session_filter]
+
+
 def safe_json_extract(text: str) -> dict[str, Any]:
     text = text.strip()
     start = text.find("{")
@@ -510,7 +526,20 @@ def x_create_post(client: Any, text: str, reply_to_tweet_id: str | None = None) 
     kwargs: dict[str, Any] = {"text": clamped}
     if reply_to_tweet_id:
         kwargs["in_reply_to_tweet_id"] = reply_to_tweet_id
-    response = client.create_tweet(**kwargs)
+    try:
+        response = client.create_tweet(**kwargs)
+    except Exception as exc:  # pragma: no cover - network/API failure path
+        response = getattr(exc, "response", None)
+        detail_parts: list[str] = []
+        if response is not None:
+            status = getattr(response, "status_code", None)
+            if status is not None:
+                detail_parts.append(f"status={status}")
+            body_text = getattr(response, "text", "")
+            if body_text:
+                detail_parts.append(body_text.strip())
+        detail = f" ({' | '.join(detail_parts)})" if detail_parts else ""
+        raise SystemExit(f"X post failed: {exc.__class__.__name__}: {exc}{detail}") from exc
     return {"id": str(response.data["id"])}
 
 
@@ -574,68 +603,76 @@ def extract_structured_picks(raw_text: str) -> dict[str, str]:
     """
     picks_by_fixture_key: dict[str, str] = {}
     
-    start_marker = "[PICKS]"
-    end_marker = "[/PICKS]"
-    
-    start_idx = raw_text.find(start_marker)
-    end_idx = raw_text.find(end_marker)
-    
-    if start_idx == -1 or end_idx == -1 or start_idx >= end_idx:
-        return picks_by_fixture_key
-    
-    picks_section = raw_text[start_idx + len(start_marker) : end_idx]
-    
-    for line in picks_section.splitlines():
-        stripped = line.strip()
-        if not stripped or stripped.startswith("#"):
-            continue
-        
-        if "=" not in stripped:
-            continue
-        
-        fixture_part, pick_part = stripped.split("=", 1)
-        fixture_part = fixture_part.strip()
-        pick_part = pick_part.strip().upper()
-        
-        if not fixture_part or not pick_part:
-            continue
-        
-        if pick_part not in ALLOWED_PICKS:
-            raise SystemExit(f"Invalid pick in [PICKS] section: '{pick_part}' (must be HOME, DRAW, or AWAY)")
-        
-        fixture_key = normalize_picks_file_key(fixture_part)
-        picks_by_fixture_key[fixture_key] = pick_part
+    sections = re.findall(r"\[PICKS\](.*?)\[/PICKS\]", raw_text, flags=re.IGNORECASE | re.DOTALL)
+    for picks_section in sections:
+        for line in picks_section.splitlines():
+            stripped = line.strip()
+            if not stripped or stripped.startswith("#"):
+                continue
 
-        matchup = split_matchup_text(fixture_part)
-        if matchup is not None:
-            parsed_home, parsed_away = matchup
-            picks_by_fixture_key[canonical_matchup_key(parsed_home, parsed_away)] = pick_part
+            if "=" not in stripped:
+                continue
+
+            fixture_part, pick_part = stripped.split("=", 1)
+            fixture_part = fixture_part.strip()
+            pick_part = pick_part.strip().upper()
+
+            if not fixture_part or not pick_part:
+                continue
+
+            if pick_part not in ALLOWED_PICKS:
+                raise SystemExit(f"Invalid pick in [PICKS] section: '{pick_part}' (must be HOME, DRAW, or AWAY)")
+
+            fixture_key = normalize_picks_file_key(fixture_part)
+            picks_by_fixture_key[fixture_key] = pick_part
+
+            matchup = split_matchup_text(fixture_part)
+            if matchup is not None:
+                parsed_home, parsed_away = matchup
+                picks_by_fixture_key[canonical_matchup_key(parsed_home, parsed_away)] = pick_part
     
     return picks_by_fixture_key
 
 
-def load_picks_file(path_str: str) -> dict[str, Any]:
+def picks_text_for_session(raw_text: str, session_filter: str) -> str:
+    block_pattern = re.compile(r"\[(MORNING|AFTERNOON)\](.*?)\[/\1\]", flags=re.IGNORECASE | re.DOTALL)
+    blocks = {name.lower(): content.strip() for name, content in block_pattern.findall(raw_text)}
+
+    if session_filter == "all":
+        if not blocks:
+            return raw_text
+        parts: list[str] = []
+        for key in ("morning", "afternoon"):
+            value = blocks.get(key)
+            if value:
+                parts.append(value)
+        return "\n\n".join(parts).strip()
+
+    if blocks:
+        selected = blocks.get(session_filter, "").strip()
+        if not selected:
+            raise SystemExit(
+                f"Picks file does not contain a [{session_filter.upper()}]...[/" 
+                f"{session_filter.upper()}] section."
+            )
+        return selected
+
+    return raw_text
+
+
+def load_picks_file(path_str: str, session_filter: str = "all") -> dict[str, Any]:
     path = Path(path_str)
     if not path.exists():
         raise SystemExit(f"Picks file not found: {path}")
 
     raw_full_text = path.read_text(encoding="utf-8")
+    scoped_text = picks_text_for_session(raw_full_text, session_filter)
     
     # Extract structured picks from [PICKS] / [/PICKS] markers
-    structured_picks = extract_structured_picks(raw_full_text)
+    structured_picks = extract_structured_picks(scoped_text)
     
     # Remove [PICKS] / [/PICKS] section from text for posting
-    raw_text_for_posting = raw_full_text
-    start_marker = "[PICKS]"
-    end_marker = "[/PICKS]"
-    start_idx = raw_text_for_posting.find(start_marker)
-    end_idx = raw_text_for_posting.find(end_marker)
-    if start_idx != -1 and end_idx != -1 and start_idx < end_idx:
-        # Remove the entire [PICKS] / [/PICKS] block including markers
-        raw_text_for_posting = (
-            raw_text_for_posting[:start_idx] + 
-            raw_text_for_posting[end_idx + len(end_marker):]
-        ).strip()
+    raw_text_for_posting = re.sub(r"\[PICKS\].*?\[/PICKS\]", "", scoped_text, flags=re.IGNORECASE | re.DOTALL).strip()
 
     picks_by_key: dict[str, str] = {}
     picks_in_order_lines: list[str] = []
@@ -648,13 +685,20 @@ def load_picks_file(path_str: str) -> dict[str, Any]:
             picks_in_order_blocks.append("\n".join(current_block).strip())
             current_block.clear()
 
-    for line_no, raw_line in enumerate(raw_full_text.splitlines(), start=1):
+    in_picks_block = False
+    for line_no, raw_line in enumerate(scoped_text.splitlines(), start=1):
         stripped = raw_line.strip()
         if stripped.startswith("#"):
             continue
-        
-        # Skip [PICKS] section during parsing
-        if stripped.startswith("[PICKS]") or stripped.startswith("[/PICKS]"):
+
+        upper = stripped.upper()
+        if upper == "[PICKS]":
+            in_picks_block = True
+            continue
+        if upper == "[/PICKS]":
+            in_picks_block = False
+            continue
+        if in_picks_block:
             continue
 
         if "=" not in raw_line:
@@ -743,6 +787,17 @@ def short_pick_for_reply(pick_data: dict[str, Any], home: str, away: str) -> str
     return "N/A"
 
 
+def short_pick_code_for_reply(pick_data: dict[str, Any]) -> str:
+    pick = str(pick_data.get("pick", "")).strip().upper()
+    if pick == "HOME":
+        return "H"
+    if pick == "AWAY":
+        return "A"
+    if pick == "DRAW":
+        return "D"
+    return "?"
+
+
 def compact_team_name(name: str) -> str:
     cleaned = " ".join(name.split())
     lowered = cleaned.lower()
@@ -767,11 +822,30 @@ def build_aggregate_ai_reply(prefetched: list[tuple[Fixture, dict[str, Any], dic
     return "\n".join(lines)
 
 
+def build_x_aggregate_ai_reply(prefetched: list[tuple[Fixture, dict[str, Any], dict[str, Any], dict[str, Any]]]) -> str:
+    """Build a compact X reply for the multi-match picks-file flow."""
+    lines = ["AI picks 1X2 C/A/G"]
+    for fixture, gpt_pick, claude_pick, gemini_pick in prefetched:
+        home = compact_team_name(fixture.home)
+        away = compact_team_name(fixture.away)
+        lines.append(
+            f"{home}/{away}: "
+            f"{short_pick_code_for_reply(gpt_pick)}/"
+            f"{short_pick_code_for_reply(claude_pick)}/"
+            f"{short_pick_code_for_reply(gemini_pick)}"
+        )
+    return "\n".join(lines)
+
+
 def publish_for_day(args: argparse.Namespace) -> None:
     target_day = resolve_day(args.day)
-    fixtures = fetch_serie_a_fixtures(target_day)
+    session_filter = getattr(args, "session", "all")
+    fixtures = filter_fixtures_by_session(fetch_serie_a_fixtures(target_day), session_filter)
     if not fixtures:
-        print("No Serie A fixtures found for that day.")
+        if session_filter == "all":
+            print("No Serie A fixtures found for that day.")
+        else:
+            print(f"No Serie A fixtures found for that day in session '{session_filter}'.")
         return
 
     dry_run = bool(getattr(args, "dry_run", False))
@@ -782,7 +856,9 @@ def publish_for_day(args: argparse.Namespace) -> None:
     cache_changed = False
     prefetched: list[tuple[Fixture, dict[str, Any], dict[str, Any], dict[str, Any]]] = []
     provider_failures: list[str] = []
-    picks_data = load_picks_file(args.picks_file) if getattr(args, "picks_file", None) else None
+    picks_data = load_picks_file(args.picks_file, session_filter=session_filter) if getattr(args, "picks_file", None) else None
+
+    print(f"Using session filter: {session_filter}")
 
     for fixture in fixtures:
         print(f"\nMatch: {fixture.home} vs {fixture.away}")
@@ -867,6 +943,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
             x_root_post = x_create_post(x_client, root_text) if post_x else {"id": ""}
 
         reply_text = build_aggregate_ai_reply([(f, g, c, m) for f, g, c, m, _, _ in picks_resolved])
+        x_reply_text = build_x_aggregate_ai_reply([(f, g, c, m) for f, g, c, m, _, _ in picks_resolved])
         if dry_run:
             ai_reply = {"uri": f"dryrun://reply/{target_day.isoformat()}", "cid": "dryrun-reply-cid"}
             x_ai_reply = {"id": f"dryrun-x-reply-{target_day.isoformat()}"}
@@ -885,7 +962,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     "parent_cid": root_post["cid"],
                 },
             ) if post_bluesky else {"uri": "", "cid": ""}
-            x_ai_reply = x_create_post(x_client, reply_text, reply_to_tweet_id=x_root_post["id"] or None) if post_x else {"id": ""}
+            x_ai_reply = x_create_post(x_client, x_reply_text, reply_to_tweet_id=x_root_post["id"] or None) if post_x else {"id": ""}
 
         for fixture, gpt_pick, claude_pick, gemini_pick, my_pick_text, my_pick_scoring in picks_resolved:
             tracking.append(
@@ -894,6 +971,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     "fixture_date": target_day.isoformat(),
                     "home": fixture.home,
                     "away": fixture.away,
+                    "session": fixture_session_label(fixture),
                     "my_pick": my_pick_scoring,
                     "my_pick_text": my_pick_text,
                     "ai_picks": {
@@ -985,6 +1063,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
                 "fixture_date": target_day.isoformat(),
                 "home": fixture.home,
                 "away": fixture.away,
+                "session": fixture_session_label(fixture),
                 "my_pick": my_pick_scoring,
                 "my_pick_text": my_pick_text,
                 "ai_picks": {
@@ -1022,10 +1101,16 @@ def publish_for_day(args: argparse.Namespace) -> None:
         print("\nDone publishing picks.")
 def score_for_day(args: argparse.Namespace) -> None:
     target_day = resolve_day(args.day)
+    session_filter = getattr(args, "session", "all")
     tracking = load_tracking()
     day_items = [i for i in tracking if i.get("fixture_date") == target_day.isoformat() and not i.get("scored")]
+    if session_filter != "all":
+        day_items = [i for i in day_items if str(i.get("session", "")).strip().lower() in ("", session_filter)]
     if not day_items:
-        print("No unscored tracked posts for that day.")
+        if session_filter == "all":
+            print("No unscored tracked posts for that day.")
+        else:
+            print(f"No unscored tracked posts for that day in session '{session_filter}'.")
         return
 
     # Deduplicate by fixture_id (keep entry with best my_pick value, or most recent)
@@ -1066,6 +1151,13 @@ def score_for_day(args: argparse.Namespace) -> None:
         if not fixture:
             pending_rows.append(f"{item.get('home')} vs {item.get('away')}: fixture not found in feed.")
             continue
+        if session_filter != "all":
+            item_session = str(item.get("session", "")).strip().lower()
+            fixture_session = fixture_session_label(fixture)
+            if item_session and item_session != session_filter:
+                continue
+            if not item_session and fixture_session != session_filter:
+                continue
         if fixture.state != "post":
             pending_rows.append(f"{fixture.home} vs {fixture.away}: match not final yet (state={fixture.state}).")
             continue
@@ -1104,7 +1196,8 @@ def score_for_day(args: argparse.Namespace) -> None:
                 wins += 1
         participant_rows.append((label, wins, total_matches))
 
-    score_text = build_scoreboard_reply(args.day, participant_rows)
+    score_label = args.day if session_filter == "all" else f"{args.day} ({session_filter})"
+    score_text = build_scoreboard_reply(score_label, participant_rows)
 
     platform = getattr(args, "platform", "both")
     post_bluesky = platform in ("bluesky", "both")
@@ -1204,6 +1297,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     publish = subparsers.add_parser("publish", help="Generate picks and publish to Bluesky")
     publish.add_argument("--day", default="today", choices=["today", "tomorrow", "yesterday"])
+    publish.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     publish.add_argument("--dry-run", action="store_true", help="Print post previews without posting to Bluesky")
     publish.add_argument("--no-cache", action="store_true", help="Disable local AI-pick cache and force fresh provider calls")
     publish.add_argument("--picks-file", help="Path to text file with your picks text. Supports keyed lines (fixture_id=...) and free-form lines in fixture order")
@@ -1212,6 +1306,7 @@ def build_parser() -> argparse.ArgumentParser:
 
     score = subparsers.add_parser("score", help="Post result score updates to existing threads")
     score.add_argument("--day", default="yesterday", choices=["yesterday", "today", "tomorrow"])
+    score.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     score.add_argument("--dry-run", action="store_true", help="Print score reply previews without posting to Bluesky")
     score.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
     score.set_defaults(func=score_for_day)

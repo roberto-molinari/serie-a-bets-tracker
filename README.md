@@ -105,6 +105,19 @@ python3 serie_a_bluesky_tool.py publish --day today --platform x
 python3 serie_a_bluesky_tool.py publish --day today --platform both
 ```
 
+Optional session filter (local kickoff time):
+
+```bash
+# All fixtures for the day (default)
+python3 serie_a_bluesky_tool.py publish --day tomorrow --session all
+
+# Morning fixtures only (before 12:00 local)
+python3 serie_a_bluesky_tool.py publish --day tomorrow --session morning
+
+# Afternoon fixtures only (12:00 local and later)
+python3 serie_a_bluesky_tool.py publish --day tomorrow --session afternoon
+```
+
 Test mode (no posting):
 
 ```bash
@@ -171,6 +184,29 @@ Then run:
 python3 serie_a_bluesky_tool.py publish --day today --dry-run --picks-file data/my_picks.txt
 ```
 
+For high-volume days, you can keep one file and split narrative and picks into session blocks:
+
+```text
+[MORNING]
+Morning narrative text...
+[PICKS]
+Inter vs Milan = HOME
+Juventus vs Roma = AWAY
+[/PICKS]
+[/MORNING]
+
+[AFTERNOON]
+Afternoon narrative text...
+[PICKS]
+Napoli vs Lazio = HOME
+Atalanta vs Fiorentina = DRAW
+[/PICKS]
+[/AFTERNOON]
+```
+
+When blocks are present, use `--session morning` or `--session afternoon` to choose the block.
+When blocks are not present, the file continues to work exactly as before.
+
 If any fixture for that day is missing from the file, `publish` aborts before posting.
 
 When `--picks-file` is used, `publish` creates:
@@ -200,6 +236,13 @@ python3 serie_a_bluesky_tool.py score --day yesterday --platform x
 
 # Both (default)
 python3 serie_a_bluesky_tool.py score --day yesterday --platform both
+```
+
+Optional session filter (same definitions as `publish`):
+
+```bash
+python3 serie_a_bluesky_tool.py score --day tomorrow --session morning
+python3 serie_a_bluesky_tool.py score --day tomorrow --session afternoon
 ```
 
 Test mode (no posting):

@@ -47,6 +47,77 @@ class TestHelpers(unittest.TestCase):
         self.assertEqual(tool.format_ai_pick_line("ChatGPT", unavailable), "- ChatGPT: unavailable")
         self.assertEqual(tool.format_score_line("ChatGPT", unavailable, "HOME"), "- ChatGPT: unavailable")
 
+    def test_fixture_session_label(self) -> None:
+        morning_fixture = tool.Fixture(
+            fixture_id="m1",
+            date_utc="2026-05-17T09:30:00Z",
+            home="A",
+            away="B",
+            home_score=None,
+            away_score=None,
+            state="pre",
+        )
+        afternoon_fixture = tool.Fixture(
+            fixture_id="a1",
+            date_utc="2026-05-17T15:30:00Z",
+            home="C",
+            away="D",
+            home_score=None,
+            away_score=None,
+            state="pre",
+        )
+
+        self.assertIn(tool.fixture_session_label(morning_fixture), {"morning", "afternoon"})
+        self.assertIn(tool.fixture_session_label(afternoon_fixture), {"morning", "afternoon"})
+
+    def test_picks_text_for_session_blocks(self) -> None:
+        raw = (
+            "[MORNING]\n"
+            "Morning text\n"
+            "[PICKS]\nA vs B = HOME\n[/PICKS]\n"
+            "[/MORNING]\n"
+            "\n"
+            "[AFTERNOON]\n"
+            "Afternoon text\n"
+            "[PICKS]\nC vs D = AWAY\n[/PICKS]\n"
+            "[/AFTERNOON]\n"
+        )
+
+        morning = tool.picks_text_for_session(raw, "morning")
+        afternoon = tool.picks_text_for_session(raw, "afternoon")
+        all_text = tool.picks_text_for_session(raw, "all")
+
+        self.assertIn("Morning text", morning)
+        self.assertNotIn("Afternoon text", morning)
+        self.assertIn("Afternoon text", afternoon)
+        self.assertNotIn("Morning text", afternoon)
+        self.assertIn("Morning text", all_text)
+        self.assertIn("Afternoon text", all_text)
+
+    def test_load_picks_file_scopes_to_session_block(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text(
+                "[MORNING]\n"
+                "Morning summary\n"
+                "[PICKS]\nInter vs Milan = HOME\n[/PICKS]\n"
+                "[/MORNING]\n"
+                "\n"
+                "[AFTERNOON]\n"
+                "Afternoon summary\n"
+                "[PICKS]\nJuventus vs Roma = AWAY\n[/PICKS]\n"
+                "[/AFTERNOON]\n",
+                encoding="utf-8",
+            )
+
+            morning_data = tool.load_picks_file(str(picks_path), session_filter="morning")
+            self.assertIn("Morning summary", morning_data["raw_text"])
+            self.assertNotIn("Afternoon summary", morning_data["raw_text"])
+            self.assertEqual(
+                morning_data["structured_picks"][tool.normalize_picks_file_key("Inter vs Milan")],
+                "HOME",
+            )
+
 
 class TestDryRunModes(unittest.TestCase):
     def test_publish_dry_run_does_not_post(self) -> None:
