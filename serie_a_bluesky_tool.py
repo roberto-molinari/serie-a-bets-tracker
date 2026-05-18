@@ -1,3 +1,48 @@
+
+from __future__ import annotations
+
+# --- Team alias mapping for DB odds lookup ---
+TEAM_ALIASES = {
+    "como": "Como 1907",
+    "parma": "Parma Calcio 1913",
+    "genoa": "Genoa CFC",
+    "pisa": "AC Pisa 1909",
+    "cagliari": "Cagliari Calcio",
+    "verona": "Hellas Verona",
+    "internazionale": "Inter",
+}
+
+# --- Odds lookup from SQLite DB ---
+import sqlite3
+
+
+def get_fixture_odds(conn, match_date, home_team, away_team):
+    """Return latest 1X2 odds dict for a fixture date/team tuple, or None."""
+    canon_home = canonicalize_team_name(home_team)
+    canon_away = canonicalize_team_name(away_team)
+    db_home = TEAM_ALIASES.get(canon_home, home_team)
+    db_away = TEAM_ALIASES.get(canon_away, away_team)
+
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT o.home_moneyline, o.draw_moneyline, o.away_moneyline
+        FROM soccer_betting_odds o
+        JOIN soccer_matches m ON o.match_id = m.match_id
+        JOIN soccer_teams th ON m.home_team_id = th.team_id
+        JOIN soccer_teams ta ON m.away_team_id = ta.team_id
+        WHERE date(m.match_date) = ?
+          AND th.name = ?
+          AND ta.name = ?
+        ORDER BY o.odds_date DESC
+        LIMIT 1
+        """,
+        (match_date, db_home, db_away),
+    )
+    row = cur.fetchone()
+    if row:
+        return {"HOME": row[0], "DRAW": row[1], "AWAY": row[2]}
+    return None
 #!/usr/bin/env python3
 """Serie A value-pick publisher and scorer for Bluesky.
 
@@ -8,8 +53,6 @@ Workflow:
 4) Post user pick to Bluesky and AI picks as a reply.
 5) Next day, score all picks and reply with a daily scoreboard.
 """
-
-from __future__ import annotations
 
 import argparse
 import json
@@ -354,6 +397,23 @@ def build_scoreboard_reply(day_label: str, participant_rows: list[tuple[str, int
     return "\n".join(lines)
 
 
+def build_scoreboard_reply_with_payout(
+    day_label: str,
+    participant_rows: list[tuple[str, int, int, int, float]],
+) -> str:
+    lines = [f"Scoreboard for {day_label}", ""]
+    for name, wins, total, odds_bets, returns in participant_rows:
+        status = "🟢" if wins and wins == total else ("🟡" if wins else "🔴")
+        if odds_bets > 0:
+            net = returns - float(odds_bets)
+            roi = (net / float(odds_bets)) * 100.0
+            metrics = f" | return: {returns:.2f}u | ROI: {roi:+.1f}%"
+        else:
+            metrics = " | return: 0.00u | ROI: n/a"
+        lines.append(f"{name}: {wins}/{total} {status}{metrics}")
+    return "\n".join(lines)
+
+
 def human_pick_text(pick: str, home: str, away: str) -> str:
     if pick == "HOME":
         return f"{home} to win"
@@ -577,7 +637,11 @@ def canonicalize_team_name(raw: str) -> str:
     cleaned = compact_team_name(raw)
     cleaned = cleaned.replace("/", " ").replace("-", " ").lower()
     cleaned = re.sub(r"[^a-z0-9\s]", " ", cleaned)
-    return " ".join(cleaned.split())
+    normalized = " ".join(cleaned.split())
+    aliases = {
+        "inter": "internazionale",
+    }
+    return aliases.get(normalized, normalized)
 
 
 def split_matchup_text(raw: str) -> tuple[str, str] | None:
@@ -594,6 +658,31 @@ def split_matchup_text(raw: str) -> tuple[str, str] | None:
 
 def canonical_matchup_key(home: str, away: str) -> str:
     return f"{canonicalize_team_name(home)}|{canonicalize_team_name(away)}"
+
+
+def resolve_structured_pick_for_fixture(structured_picks: dict[str, str], fixture: Fixture) -> str:
+    fixture_key = normalize_picks_file_key(f"{fixture.home} vs {fixture.away}")
+    fixture_canonical_key = canonical_matchup_key(fixture.home, fixture.away)
+    pick = structured_picks.get(fixture_key, "")
+    if not pick:
+        pick = structured_picks.get(fixture_canonical_key, "")
+    return pick
+
+
+def validate_structured_picks_for_fixtures(structured_picks: dict[str, str], fixtures: list[Fixture]) -> None:
+    missing: list[str] = []
+    for fixture in fixtures:
+        pick = resolve_structured_pick_for_fixture(structured_picks, fixture)
+        if not pick:
+            missing.append(f"{fixture.home} vs {fixture.away}")
+
+    if missing:
+        joined = "; ".join(missing)
+        raise SystemExit(
+            "Invalid [PICKS] section: missing or unmatched picks for fixtures: "
+            f"{joined}. Use 'Home vs Away = HOME|DRAW|AWAY'. "
+            "Aborting before AI calls, posting, cache writes, or tracking updates."
+        )
 
 
 def extract_structured_picks(raw_text: str) -> dict[str, str]:
@@ -669,6 +758,7 @@ def load_picks_file(path_str: str, session_filter: str = "all") -> dict[str, Any
     scoped_text = picks_text_for_session(raw_full_text, session_filter)
     
     # Extract structured picks from [PICKS] / [/PICKS] markers
+    has_structured_picks_section = bool(re.search(r"\[PICKS\].*?\[/PICKS\]", scoped_text, flags=re.IGNORECASE | re.DOTALL))
     structured_picks = extract_structured_picks(scoped_text)
     
     # Remove [PICKS] / [/PICKS] section from text for posting
@@ -736,6 +826,7 @@ def load_picks_file(path_str: str, session_filter: str = "all") -> dict[str, Any
         "non_keyed_full_text": non_keyed_full_text,
         "raw_text": raw_text_for_posting,
         "structured_picks": structured_picks,
+        "has_structured_picks_section": has_structured_picks_section,
     }
 
 
@@ -840,6 +931,8 @@ def build_x_aggregate_ai_reply(prefetched: list[tuple[Fixture, dict[str, Any], d
 def publish_for_day(args: argparse.Namespace) -> None:
     target_day = resolve_day(args.day)
     session_filter = getattr(args, "session", "all")
+    picks_data = load_picks_file(args.picks_file, session_filter=session_filter) if getattr(args, "picks_file", None) else None
+
     fixtures = filter_fixtures_by_session(fetch_serie_a_fixtures(target_day), session_filter)
     if not fixtures:
         if session_filter == "all":
@@ -847,6 +940,9 @@ def publish_for_day(args: argparse.Namespace) -> None:
         else:
             print(f"No Serie A fixtures found for that day in session '{session_filter}'.")
         return
+
+    if picks_data is not None and picks_data.get("has_structured_picks_section", False):
+        validate_structured_picks_for_fixtures(picks_data.get("structured_picks", {}), fixtures)
 
     dry_run = bool(getattr(args, "dry_run", False))
     use_cache = not bool(getattr(args, "no_cache", False))
@@ -856,7 +952,6 @@ def publish_for_day(args: argparse.Namespace) -> None:
     cache_changed = False
     prefetched: list[tuple[Fixture, dict[str, Any], dict[str, Any], dict[str, Any]]] = []
     provider_failures: list[str] = []
-    picks_data = load_picks_file(args.picks_file, session_filter=session_filter) if getattr(args, "picks_file", None) else None
 
     print(f"Using session filter: {session_filter}")
 
@@ -917,11 +1012,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
         # Build picks_resolved with structured picks for scoring
         picks_resolved: list[tuple[Fixture, dict[str, Any], dict[str, Any], dict[str, Any], str, str]] = []
         for fixture, gpt_pick, claude_pick, gemini_pick in prefetched:
-            fixture_key = normalize_picks_file_key(f"{fixture.home} vs {fixture.away}")
-            fixture_canonical_key = canonical_matchup_key(fixture.home, fixture.away)
-            pick_1x2_code = structured_picks.get(fixture_key, "")
-            if not pick_1x2_code:
-                pick_1x2_code = structured_picks.get(fixture_canonical_key, "")
+            pick_1x2_code = resolve_structured_pick_for_fixture(structured_picks, fixture)
             # my_pick_text is just the fixture name (for display), my_pick_scoring is the 1X2 code
             picks_resolved.append((fixture, gpt_pick, claude_pick, gemini_pick, "", pick_1x2_code))
 
@@ -1102,8 +1193,11 @@ def publish_for_day(args: argparse.Namespace) -> None:
 def score_for_day(args: argparse.Namespace) -> None:
     target_day = resolve_day(args.day)
     session_filter = getattr(args, "session", "all")
+    recalculate = getattr(args, "recalculate", False)
     tracking = load_tracking()
-    day_items = [i for i in tracking if i.get("fixture_date") == target_day.isoformat() and not i.get("scored")]
+    day_items = [i for i in tracking if i.get("fixture_date") == target_day.isoformat()]
+    if not recalculate:
+        day_items = [i for i in day_items if not i.get("scored")]
     if session_filter != "all":
         day_items = [i for i in day_items if str(i.get("session", "")).strip().lower() in ("", session_filter)]
     if not day_items:
@@ -1143,6 +1237,16 @@ def score_for_day(args: argparse.Namespace) -> None:
 
     fixtures = {f.fixture_id: f for f in fetch_serie_a_fixtures(target_day)}
     dry_run = bool(getattr(args, "dry_run", False))
+
+    odds_db_path = getattr(args, "odds_db", None)
+    odds_conn = None
+    if odds_db_path:
+        try:
+            odds_conn = sqlite3.connect(odds_db_path)
+        except Exception as e:
+            print(f"[Warning] Could not open odds DB: {e}")
+            odds_conn = None
+
     final_rows: list[dict[str, Any]] = []
     pending_rows: list[str] = []
 
@@ -1167,7 +1271,23 @@ def score_for_day(args: argparse.Namespace) -> None:
             pending_rows.append(f"{fixture.home} vs {fixture.away}: score unavailable.")
             continue
 
-        final_rows.append({"item": item, "fixture": fixture, "outcome": outcome})
+        odds = None
+        if odds_conn:
+            try:
+                odds = get_fixture_odds(
+                    odds_conn,
+                    fixture.date_utc[:10],
+                    fixture.home,
+                    fixture.away,
+                )
+            except Exception as e:
+                print(f"[Warning] Odds lookup failed for {fixture.home} vs {fixture.away}: {e}")
+                odds = None
+
+        final_rows.append({"item": item, "fixture": fixture, "outcome": outcome, "odds": odds})
+
+    if odds_conn:
+        odds_conn.close()
 
     if pending_rows:
         print("Waiting for all tracked matches to finish before posting the scoreboard:")
@@ -1180,24 +1300,47 @@ def score_for_day(args: argparse.Namespace) -> None:
         return
 
     total_matches = len(final_rows)
-    participant_rows: list[tuple[str, int, int]] = []
+    participant_rows: list[tuple[str, int, int, int, float]] = []
     for label, key in (("Minvest", "my_pick"), ("Gemini", "gemini"), ("Claude", "claude"), ("ChatGPT", "chatgpt")):
         wins = 0
+        odds_bets = 0
+        returns = 0.0
         for row in final_rows:
             outcome = row["outcome"]
             item = row["item"]
+            odds = row.get("odds")
             if key == "my_pick":
                 pick = normalize_my_pick_for_scoring(str(item.get("my_pick", "")))
             else:
                 pick_data = item.get("ai_picks", {}).get(key, {})
                 pick = str(pick_data.get("pick", "")).strip().upper()
 
-            if pick in ALLOWED_PICKS and pick == outcome:
+            # Debug: Show each fixture's pick and outcome for Minvest
+            if label == "Minvest":
+                fixture_name = f"{item.get('home')} vs {item.get('away')}"
+                match_result = "✓ MATCH" if pick == outcome else "✗ miss"
+                print(f"  {fixture_name}: pick={pick}, outcome={outcome} {match_result}")
+
+            if pick not in ALLOWED_PICKS:
+                continue
+
+            if odds and pick in odds and odds[pick] is not None:
+                odds_bets += 1
+
+            if pick == outcome:
                 wins += 1
-        participant_rows.append((label, wins, total_matches))
+                # Returns are stake-inclusive decimal units for 1u stake.
+                if odds and pick in odds and odds[pick] is not None:
+                    odd = odds[pick]
+                    if odd > 0:
+                        returns += 1 + (odd / 100)
+                    else:
+                        returns += 1 + (100 / abs(odd))
+
+        participant_rows.append((label, wins, total_matches, odds_bets, returns))
 
     score_label = args.day if session_filter == "all" else f"{args.day} ({session_filter})"
-    score_text = build_scoreboard_reply(score_label, participant_rows)
+    score_text = build_scoreboard_reply_with_payout(score_label, participant_rows)
 
     platform = getattr(args, "platform", "both")
     post_bluesky = platform in ("bluesky", "both")
@@ -1250,7 +1393,8 @@ def score_for_day(args: argparse.Namespace) -> None:
             item = row["item"]
             fixture = row["fixture"]
             outcome = row["outcome"]
-            item["scored"] = True
+            if not recalculate:
+                item["scored"] = True
             item["result"] = {
                 "outcome": outcome,
                 "home_score": fixture.home_score,
@@ -1265,9 +1409,13 @@ def score_for_day(args: argparse.Namespace) -> None:
         if post_x:
             print(f"Posted X scoreboard reply: {x_post_url(x_score_post['id']) or x_score_post['id']}")
 
-    save_tracking(tracking)
+    if not dry_run and not recalculate:
+        save_tracking(tracking)
+
     if dry_run:
         print("Done dry-run scoring. No posts were created and tracking was not marked scored.")
+    elif recalculate:
+        print("Done recalculating scores. Tracking was not persisted to database.")
     else:
         print("Done scoring.")
 
@@ -1302,6 +1450,12 @@ def build_parser() -> argparse.ArgumentParser:
     publish.add_argument("--no-cache", action="store_true", help="Disable local AI-pick cache and force fresh provider calls")
     publish.add_argument("--picks-file", help="Path to text file with your picks text. Supports keyed lines (fixture_id=...) and free-form lines in fixture order")
     publish.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
+
+    publish.add_argument(
+        "--odds-db",
+        help="Path to SQLite odds database for payout-based scoring (optional)",
+        default=None,
+    )
     publish.set_defaults(func=publish_for_day)
 
     score = subparsers.add_parser("score", help="Post result score updates to existing threads")
@@ -1309,6 +1463,17 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     score.add_argument("--dry-run", action="store_true", help="Print score reply previews without posting to Bluesky")
     score.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
+
+    score.add_argument(
+        "--odds-db",
+        help="Path to SQLite odds database for payout-based scoring (optional)",
+        default=None,
+    )
+    score.add_argument(
+        "--recalculate",
+        action="store_true",
+        help="Recalculate scores even if already marked scored (do not persist changes to database)",
+    )
     score.set_defaults(func=score_for_day)
 
     return parser

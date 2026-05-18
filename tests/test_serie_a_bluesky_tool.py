@@ -423,9 +423,8 @@ class TestDryRunModes(unittest.TestCase):
         mock_login.assert_not_called()
         mock_post.assert_not_called()
 
-        items = saved["items"]
-        self.assertFalse(items[0]["scored"])
-        self.assertNotIn("result", items[0])
+        # In dry-run mode, save_tracking should not be called, so 'items' should not exist
+        self.assertNotIn("items", saved)
 
     def test_publish_dry_run_uses_picks_section_for_auto_scoring(self) -> None:
         fixture = tool.Fixture(
@@ -503,6 +502,46 @@ class TestDryRunModes(unittest.TestCase):
                 tool.publish_for_day(args)
 
         self.assertEqual(saved["items"][0]["my_pick"], "HOME")
+
+    def test_publish_dry_run_fails_fast_on_unmatched_structured_pick(self) -> None:
+        fixture = tool.Fixture(
+            fixture_id="108",
+            date_utc="2026-05-08T18:45:00Z",
+            home="Internazionale",
+            away="Hellas Verona",
+            home_score=None,
+            away_score=None,
+            state="pre",
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text(
+                "Matchday notes.\n\n"
+                "[PICKS]\n"
+                "Juventus vs Fiorentina = HOME\n"
+                "[/PICKS]\n",
+                encoding="utf-8",
+            )
+            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+
+            with (
+                patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
+                patch("serie_a_bluesky_tool.ask_openai") as mock_openai,
+                patch("serie_a_bluesky_tool.ask_claude") as mock_claude,
+                patch("serie_a_bluesky_tool.ask_gemini") as mock_gemini,
+                patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
+                patch("serie_a_bluesky_tool.save_tracking") as mock_save_tracking,
+                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+            ):
+                with self.assertRaises(SystemExit) as ctx:
+                    tool.publish_for_day(args)
+
+        self.assertIn("Invalid [PICKS] section", str(ctx.exception))
+        mock_openai.assert_not_called()
+        mock_claude.assert_not_called()
+        mock_gemini.assert_not_called()
+        mock_save_tracking.assert_not_called()
 
 
 
