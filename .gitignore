@@ -20,8 +20,9 @@ env/
 Thumbs.db
 
 # Project data (local state - can re-enable if you want to track example data)
-# data/ai_pick_cache.json
-# data/posted_picks.json
+data/ai_pick_cache.json
+data/posted_picks.json
+data/my_picks.txt
 
 # Test artifacts
 .coverage

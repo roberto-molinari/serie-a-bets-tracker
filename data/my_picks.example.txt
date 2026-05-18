@@ -1,0 +1,39 @@
+[MORNING]
+Your morning picks writeup goes here.
+
+-best value:
+Roma/Lazio - Draw
+Como/Parma - Parma +0.5
+Genoa/Milan - Genoa +0.5
+
+-the rest:
+Juventus/Fiorentina - Juventus ML
+Pisa/Napoli - Napoli ML
+Inter/Verona - Inter ML
+
+[PICKS]
+Roma vs Lazio = DRAW
+Como vs Parma = DRAW
+Genoa vs Milan = DRAW
+Juventus vs Fiorentina = HOME
+Pisa vs Napoli = AWAY
+Inter vs Verona = HOME
+[/PICKS]
+[/MORNING]
+
+[AFTERNOON]
+Your afternoon picks writeup goes here.
+
+-best value:
+Udinese/Cremonese - Udinese ML
+Sassuolo/Lecce - Sassuolo ML
+Cagliari/Torino - Cagliari ML
+Atalanta/Bologna - Draw
+
+[PICKS]
+Udinese vs Cremonese = HOME
+Sassuolo vs Lecce = HOME
+Cagliari vs Torino = HOME
+Atalanta vs Bologna = DRAW
+[/PICKS]
+[/AFTERNOON]

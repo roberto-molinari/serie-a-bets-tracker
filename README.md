@@ -178,6 +178,14 @@ Juventus vs Roma = AWAY
 
 The `[PICKS]` section is automatically removed from the Bluesky post (only the narrative text above it is posted), but the 1X2 codes are extracted and used for automatic scoring.
 
+Use the committed template file to bootstrap your local picks file once:
+
+```bash
+cp data/my_picks.example.txt data/my_picks.txt
+```
+
+`data/my_picks.txt` is intended for local use and is git-ignored.
+
 Then run:
 
 ```bash
