@@ -404,10 +404,10 @@ def build_scoreboard_reply(day_label: str, participant_rows: list[tuple[str, int
 
 def build_scoreboard_reply_with_payout(
     day_label: str,
-    participant_rows: list[tuple[str, int, int, int, float]],
+    participant_rows: list[tuple[str, int, int, int, float, int]],
 ) -> str:
     lines = [f"Scoreboard for {day_label}", ""]
-    for name, wins, total, odds_bets, returns in participant_rows:
+    for name, wins, total, odds_bets, returns, missing_odds in participant_rows:
         status = "🟢" if wins and wins == total else ("🟡" if wins else "🔴")
         if odds_bets > 0:
             net = returns - float(odds_bets)
@@ -415,6 +415,10 @@ def build_scoreboard_reply_with_payout(
             metrics = f" | return: {returns:.2f}u | ROI: {roi:+.1f}%"
         else:
             metrics = " | return: 0.00u | ROI: n/a"
+
+        if missing_odds > 0:
+            metrics += f" | partial: missing odds for {missing_odds} pick(s)"
+
         lines.append(f"{name}: {wins}/{total} {status}{metrics}")
     return "\n".join(lines)
 
@@ -1103,26 +1107,41 @@ def publish_for_day(args: argparse.Namespace) -> None:
             print("\nDone dry-run publish. No posts were created.")
         else:
             print("\nDone publishing picks.")
-def score_for_day(args: argparse.Namespace) -> None:
-    target_day = resolve_day(args.day)
+def score_for_date_range(args: argparse.Namespace) -> None:
+    start_date_str = getattr(args, "start_date", None)
+    end_date_str = getattr(args, "end_date", None)
+    day_str = getattr(args, "day", None)
+
+    if day_str:
+        start_date = end_date = resolve_day(day_str)
+    elif start_date_str and end_date_str:
+        start_date = datetime.strptime(start_date_str, "%Y-%m-%d").date()
+        end_date = datetime.strptime(end_date_str, "%Y-%m-%d").date()
+    else:
+        raise SystemExit("Scoring requires either --day or both --start-date and --end-date.")
+
     session_filter = getattr(args, "session", "all")
     recalculate = getattr(args, "recalculate", False)
     tracking = load_tracking()
-    day_items = [i for i in tracking if i.get("fixture_date") == target_day.isoformat()]
+    
+    # Filter items within the date range
+    date_items = [
+        i for i in tracking 
+        if start_date <= datetime.strptime(i.get("fixture_date"), "%Y-%m-%d").date() <= end_date
+    ]
+
     if not recalculate:
-        day_items = [i for i in day_items if not i.get("scored")]
+        date_items = [i for i in date_items if not i.get("scored")]
     if session_filter != "all":
-        day_items = [i for i in day_items if str(i.get("session", "")).strip().lower() in ("", session_filter)]
-    if not day_items:
-        if session_filter == "all":
-            print("No unscored tracked posts for that day.")
-        else:
-            print(f"No unscored tracked posts for that day in session '{session_filter}'.")
+        date_items = [i for i in date_items if str(i.get("session", "")).strip().lower() in ("", session_filter)]
+    
+    if not date_items:
+        print(f"No unscored tracked posts found for the specified date range.")
         return
 
-    # Deduplicate by fixture_id (keep entry with best my_pick value, or most recent)
+    # Deduplicate by fixture_id
     seen: dict[str, dict[str, Any]] = {}
-    for item in day_items:
+    for item in date_items:
         fixture_id = str(item.get("fixture_id", ""))
         if not fixture_id:
             continue
@@ -1137,18 +1156,23 @@ def score_for_day(args: argparse.Namespace) -> None:
             item_is_real = item_root_uri.startswith("at://")
 
             if item_is_real and not current_is_real:
-                # Prefer real posted entry over dry-run placeholder
                 seen[fixture_id] = item
             elif current_is_real or not item_is_real:
-                # Keep current if it has a real URI, or both are dry-run
-                # Among same type, also prefer non-empty my_pick
                 current_my_pick = str(current.get("my_pick", "")).strip()
                 item_my_pick = str(item.get("my_pick", "")).strip()
                 if item_my_pick and not current_my_pick:
                     seen[fixture_id] = item
-    day_items = list(seen.values())
+    
+    unique_items = list(seen.values())
 
-    fixtures = {f.fixture_id: f for f in fetch_serie_a_fixtures(target_day)}
+    # Fetch all fixtures for the entire date range at once
+    all_fixtures: dict[str, Fixture] = {}
+    current_date = start_date
+    while current_date <= end_date:
+        for f in fetch_serie_a_fixtures(current_date):
+            all_fixtures[f.fixture_id] = f
+        current_date += timedelta(days=1)
+
     dry_run = bool(getattr(args, "dry_run", False))
 
     odds_db_path = getattr(args, "odds_db", None)
@@ -1163,18 +1187,12 @@ def score_for_day(args: argparse.Namespace) -> None:
     final_rows: list[dict[str, Any]] = []
     pending_rows: list[str] = []
 
-    for item in day_items:
-        fixture = fixtures.get(str(item.get("fixture_id")))
+    for item in unique_items:
+        fixture = all_fixtures.get(str(item.get("fixture_id")))
         if not fixture:
             pending_rows.append(f"{item.get('home')} vs {item.get('away')}: fixture not found in feed.")
             continue
-        if session_filter != "all":
-            item_session = str(item.get("session", "")).strip().lower()
-            fixture_session = fixture_session_label(fixture)
-            if item_session and item_session != session_filter:
-                continue
-            if not item_session and fixture_session != session_filter:
-                continue
+        
         if fixture.state != "post":
             pending_rows.append(f"{fixture.home} vs {fixture.away}: match not final yet (state={fixture.state}).")
             continue
@@ -1209,15 +1227,16 @@ def score_for_day(args: argparse.Namespace) -> None:
         return
 
     if not final_rows:
-        print("No final tracked matches found for that day.")
+        print("No final tracked matches found for the specified date range.")
         return
 
     total_matches = len(final_rows)
-    participant_rows: list[tuple[str, int, int, int, float]] = []
+    participant_rows: list[tuple[str, int, int, int, float, int]] = []
     for label, key in (("Minvest", "my_pick"), ("Gemini", "gemini"), ("Claude", "claude"), ("ChatGPT", "chatgpt")):
         wins = 0
         odds_bets = 0
         returns = 0.0
+        graded_picks = 0
         for row in final_rows:
             outcome = row["outcome"]
             item = row["item"]
@@ -1228,21 +1247,16 @@ def score_for_day(args: argparse.Namespace) -> None:
                 pick_data = item.get("ai_picks", {}).get(key, {})
                 pick = str(pick_data.get("pick", "")).strip().upper()
 
-            # Debug: Show each fixture's pick and outcome for Minvest
-            if label == "Minvest":
-                fixture_name = f"{item.get('home')} vs {item.get('away')}"
-                match_result = "✓ MATCH" if pick == outcome else "✗ miss"
-                print(f"  {fixture_name}: pick={pick}, outcome={outcome} {match_result}")
-
             if pick not in ALLOWED_PICKS:
                 continue
+
+            graded_picks += 1
 
             if odds and pick in odds and odds[pick] is not None:
                 odds_bets += 1
 
             if pick == outcome:
                 wins += 1
-                # Returns are stake-inclusive decimal units for 1u stake.
                 if odds and pick in odds and odds[pick] is not None:
                     odd = odds[pick]
                     if odd > 0:
@@ -1250,14 +1264,37 @@ def score_for_day(args: argparse.Namespace) -> None:
                     else:
                         returns += 1 + (100 / abs(odd))
 
-        participant_rows.append((label, wins, total_matches, odds_bets, returns))
+        missing_odds = max(0, graded_picks - odds_bets)
+        participant_rows.append((label, wins, total_matches, odds_bets, returns, missing_odds))
 
-    score_label = args.day if session_filter == "all" else f"{args.day} ({session_filter})"
+    if start_date == end_date:
+        score_label = start_date.strftime("%Y-%m-%d")
+    else:
+        score_label = f"{start_date.strftime('%Y-%m-%d')} to {end_date.strftime('%Y-%m-%d')}"
+    
+    if session_filter != "all":
+        score_label += f" ({session_filter})"
+
     score_text = build_scoreboard_reply_with_payout(score_label, participant_rows)
 
     platform = getattr(args, "platform", "both")
     post_bluesky = platform in ("bluesky", "both")
     post_x = platform in ("x", "both")
+
+    # For date range scoring, we don't post a reply to a specific thread
+    if start_date != end_date:
+        print("\n--- Aggregated Scoreboard ---")
+        print(score_text)
+        print("---------------------------\n")
+        if not dry_run:
+            # Mark items as scored
+            for row in final_rows:
+                item = row["item"]
+                if not recalculate:
+                    item["scored"] = True
+            save_tracking(tracking)
+        print("Done scoring for date range.")
+        return
 
     root_item = final_rows[0]["item"]
     root_uri = str(root_item.get("root_post", {}).get("uri", ""))
@@ -1276,8 +1313,8 @@ def score_for_day(args: argparse.Namespace) -> None:
         x_client = None
 
     if dry_run:
-        score_post = {"uri": f"dryrun://score/{target_day.isoformat()}", "cid": "dryrun-score-cid"}
-        x_score_post = {"id": f"dryrun-x-score-{target_day.isoformat()}"}
+        score_post = {"uri": f"dryrun://score/{start_date.isoformat()}", "cid": "dryrun-score-cid"}
+        x_score_post = {"id": f"dryrun-x-score-{start_date.isoformat()}"}
         print("\n[DRY-RUN] Scoreboard reply preview:")
         print(clamp_post(score_text))
         if post_bluesky:
@@ -1372,7 +1409,9 @@ def build_parser() -> argparse.ArgumentParser:
     publish.set_defaults(func=publish_for_day)
 
     score = subparsers.add_parser("score", help="Post result score updates to existing threads")
-    score.add_argument("--day", default="yesterday", help="Target day: 'yesterday', 'today', 'tomorrow', or 'YYYY-MM-DD'")
+    score.add_argument("--day", help="Target day: 'yesterday', 'today', 'tomorrow', or 'YYYY-MM-DD'")
+    score.add_argument("--start-date", help="Start date for scoring range (YYYY-MM-DD)")
+    score.add_argument("--end-date", help="End date for scoring range (YYYY-MM-DD)")
     score.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     score.add_argument("--dry-run", action="store_true", help="Print score reply previews without posting to Bluesky")
     score.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
@@ -1385,9 +1424,9 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument(
         "--recalculate",
         action="store_true",
-        help="Recalculate scores even if already marked scored (do not persist changes to database)",
+        help="Recalculate scores for already-scored items without posting or updating tracking",
     )
-    score.set_defaults(func=score_for_day)
+    score.set_defaults(func=score_for_date_range)
 
     return parser
 

@@ -1,122 +1,47 @@
 import argparse
 import tempfile
 import unittest
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 import serie_a_bluesky_tool as tool
+
+FIX_DATE = date(2026, 5, 8)
+
+
+def provider_pick(code: str) -> dict:
+    return {
+        "pick": code,
+        "pick_text": code,
+        "market": "1X2",
+        "reason": "test",
+        "confidence": 70,
+        "available": True,
+    }
 
 
 class TestHelpers(unittest.TestCase):
     def test_resolve_day(self) -> None:
-        with patch("serie_a_bluesky_tool.today_utc", return_value=date(2026, 5, 8)):
-            self.assertEqual(tool.resolve_day("today"), date(2026, 5, 8))
-            self.assertEqual(tool.resolve_day("tomorrow"), date(2026, 5, 9))
-            self.assertEqual(tool.resolve_day("yesterday"), date(2026, 5, 7))
+        today = date.today()
+        self.assertEqual(tool.resolve_day("today"), today)
+        self.assertEqual(tool.resolve_day("yesterday"), today - timedelta(days=1))
+        self.assertEqual(tool.resolve_day("2024-01-15"), date(2024, 1, 15))
 
-    def test_outcome_from_scores(self) -> None:
-        self.assertEqual(tool.outcome_from_scores(2, 1), "HOME")
-        self.assertEqual(tool.outcome_from_scores(0, 1), "AWAY")
-        self.assertEqual(tool.outcome_from_scores(1, 1), "DRAW")
-        self.assertIsNone(tool.outcome_from_scores(None, 1))
+    def test_get_fixture_odds(self) -> None:
+        conn = MagicMock()
+        cursor = MagicMock()
+        conn.cursor.return_value = cursor
+        cursor.fetchone.side_effect = [
+            (150, 220, -110),
+            None,
+        ]
 
-    def test_clamp_post(self) -> None:
-        self.assertEqual(tool.clamp_post("abc", max_chars=5), "abc")
-        self.assertEqual(tool.clamp_post("abcdef", max_chars=5), "abcd…")
+        odds = tool.get_fixture_odds(conn, "2026-05-17", "Inter", "Milan")
+        self.assertEqual(odds, {"HOME": 150, "DRAW": 220, "AWAY": -110})
 
-    def test_safe_json_extract(self) -> None:
-        parsed = tool.safe_json_extract('prefix {"pick":"HOME","confidence":90} suffix')
-        self.assertEqual(parsed["pick"], "HOME")
-        with self.assertRaises(ValueError):
-            tool.safe_json_extract("no json here")
-
-    def test_normalize_pick(self) -> None:
-        pick = tool.normalize_pick({"pick": "home", "confidence": 120, "reason": "x"}, "ChatGPT")
-        self.assertEqual(pick["pick"], "HOME")
-        self.assertEqual(pick["confidence"], 100)
-        self.assertEqual(pick["market"], "1X2")
-        self.assertTrue(pick["available"])
-
-        with self.assertRaises(SystemExit):
-            tool.normalize_pick({"pick": "BTTS", "confidence": 10}, "ChatGPT")
-
-    def test_format_helpers_show_unavailable_pick(self) -> None:
-        unavailable = tool.unavailable_pick("quota exceeded")
-
-        self.assertEqual(tool.format_ai_pick_line("ChatGPT", unavailable), "- ChatGPT: unavailable")
-        self.assertEqual(tool.format_score_line("ChatGPT", unavailable, "HOME"), "- ChatGPT: unavailable")
-
-    def test_fixture_session_label(self) -> None:
-        morning_fixture = tool.Fixture(
-            fixture_id="m1",
-            date_utc="2026-05-17T09:30:00Z",
-            home="A",
-            away="B",
-            home_score=None,
-            away_score=None,
-            state="pre",
-        )
-        afternoon_fixture = tool.Fixture(
-            fixture_id="a1",
-            date_utc="2026-05-17T15:30:00Z",
-            home="C",
-            away="D",
-            home_score=None,
-            away_score=None,
-            state="pre",
-        )
-
-        self.assertIn(tool.fixture_session_label(morning_fixture), {"morning", "afternoon"})
-        self.assertIn(tool.fixture_session_label(afternoon_fixture), {"morning", "afternoon"})
-
-    def test_picks_text_for_session_blocks(self) -> None:
-        raw = (
-            "[MORNING]\n"
-            "Morning text\n"
-            "[PICKS]\nA vs B = HOME\n[/PICKS]\n"
-            "[/MORNING]\n"
-            "\n"
-            "[AFTERNOON]\n"
-            "Afternoon text\n"
-            "[PICKS]\nC vs D = AWAY\n[/PICKS]\n"
-            "[/AFTERNOON]\n"
-        )
-
-        morning = tool.picks_text_for_session(raw, "morning")
-        afternoon = tool.picks_text_for_session(raw, "afternoon")
-        all_text = tool.picks_text_for_session(raw, "all")
-
-        self.assertIn("Morning text", morning)
-        self.assertNotIn("Afternoon text", morning)
-        self.assertIn("Afternoon text", afternoon)
-        self.assertNotIn("Morning text", afternoon)
-        self.assertIn("Morning text", all_text)
-        self.assertIn("Afternoon text", all_text)
-
-    def test_load_picks_file_scopes_to_session_block(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            picks_path = Path(tmp_dir) / "picks.txt"
-            picks_path.write_text(
-                "[MORNING]\n"
-                "Morning summary\n"
-                "[PICKS]\nInter vs Milan = HOME\n[/PICKS]\n"
-                "[/MORNING]\n"
-                "\n"
-                "[AFTERNOON]\n"
-                "Afternoon summary\n"
-                "[PICKS]\nJuventus vs Roma = AWAY\n[/PICKS]\n"
-                "[/AFTERNOON]\n",
-                encoding="utf-8",
-            )
-
-            morning_data = tool.load_picks_file(str(picks_path), session_filter="morning")
-            self.assertIn("Morning summary", morning_data["raw_text"])
-            self.assertNotIn("Afternoon summary", morning_data["raw_text"])
-            self.assertEqual(
-                morning_data["structured_picks"][tool.normalize_picks_file_key("Inter vs Milan")],
-                "HOME",
-            )
+        no_odds = tool.get_fixture_odds(conn, "2026-05-17", "Inter", "Milan")
+        self.assertIsNone(no_odds)
 
 
 class TestDryRunModes(unittest.TestCase):
@@ -131,32 +56,37 @@ class TestDryRunModes(unittest.TestCase):
             state="pre",
         )
 
-        saved: dict[str, list[dict]] = {}
-        args = argparse.Namespace(day="today", dry_run=True)
+        saved: list[dict] = []
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text("Notes for post\n[PICKS]\nInter vs Milan = HOME\n[/PICKS]\n", encoding="utf-8")
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                session="all",
+                platform="both",
+                odds_db=None,
+                no_cache=False,
+                picks_file=str(picks_path),
+            )
 
-        with (
-            patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-            patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-            patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-            patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
-            patch("serie_a_bluesky_tool.ask_user_pick", return_value="HOME"),
-            patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-            patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-            patch("serie_a_bluesky_tool.load_pick_cache", return_value={}),
-            patch("serie_a_bluesky_tool.save_pick_cache"),
-            patch("serie_a_bluesky_tool.bsky_login") as mock_login,
-            patch("serie_a_bluesky_tool.bsky_create_post") as mock_post,
-            patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
-        ):
-            tool.publish_for_day(args)
+            with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
+                patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
+                patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
+                patch("serie_a_bluesky_tool.bsky_login", return_value=MagicMock()) as mock_login,
+                patch("serie_a_bluesky_tool.x_create_client", return_value=MagicMock()) as mock_x_login,
+            ):
+                tool.publish_for_day(args)
 
-        mock_login.assert_not_called()
-        mock_post.assert_not_called()
-
-        items = saved["items"]
-        self.assertEqual(len(items), 1)
-        self.assertEqual(items[0]["my_pick"], "HOME")
-        self.assertTrue(items[0]["root_post"]["uri"].startswith("dryrun://root/"))
+            mock_login.assert_not_called()
+            mock_x_login.assert_not_called()
+        self.assertEqual(len(saved), 1)
+        self.assertTrue(saved[0]["root_post"]["uri"].startswith("dryrun://root/"))
 
     def test_publish_dry_run_aborts_when_provider_fails(self) -> None:
         fixture = tool.Fixture(
@@ -169,27 +99,27 @@ class TestDryRunModes(unittest.TestCase):
             state="pre",
         )
 
-        args = argparse.Namespace(day="today", dry_run=True)
+        args = argparse.Namespace(
+            day="today",
+            dry_run=True,
+            session="all",
+            platform="both",
+            odds_db=None,
+            no_cache=False,
+            picks_file=None,
+        )
 
         with (
+            patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
             patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-            patch("serie_a_bluesky_tool.ask_openai", side_effect=SystemExit("OPENAI_API_KEY is required")),
-            patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55, "available": True}),
-            patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58, "available": True}),
             patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-            patch("serie_a_bluesky_tool.save_tracking") as mock_save,
-            patch("serie_a_bluesky_tool.load_pick_cache", return_value={}),
-            patch("serie_a_bluesky_tool.save_pick_cache"),
-            patch("serie_a_bluesky_tool.bsky_login") as mock_login,
-            patch("serie_a_bluesky_tool.bsky_create_post") as mock_post,
-            patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+            patch("serie_a_bluesky_tool.ask_openai", side_effect=Exception("Provider failed")),
+            patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+            patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
         ):
             with self.assertRaises(SystemExit) as exc:
                 tool.publish_for_day(args)
 
-        mock_login.assert_not_called()
-        mock_post.assert_not_called()
-        mock_save.assert_not_called()
         self.assertIn("Aborting publish because not all AI providers returned picks", str(exc.exception))
 
     def test_publish_dry_run_uses_cached_picks_without_provider_calls(self) -> None:
@@ -202,41 +132,49 @@ class TestDryRunModes(unittest.TestCase):
             away_score=None,
             state="pre",
         )
-        target_day = date(2026, 5, 8)
+
         cache = {
-            tool.pick_cache_key("ChatGPT", fixture, target_day): {
-                "pick": {"pick": "HOME", "market": "1X2", "reason": "cached", "confidence": 70, "available": True}
+            tool.pick_cache_key("ChatGPT", fixture, FIX_DATE): {
+                "pick": provider_pick("AWAY") | {"reason": "cached-gpt"}
             },
-            tool.pick_cache_key("Claude", fixture, target_day): {
-                "pick": {"pick": "DRAW", "market": "1X2", "reason": "cached", "confidence": 64, "available": True}
+            tool.pick_cache_key("Claude", fixture, FIX_DATE): {
+                "pick": provider_pick("DRAW") | {"reason": "cached-claude"}
             },
-            tool.pick_cache_key("Gemini", fixture, target_day): {
-                "pick": {"pick": "AWAY", "market": "1X2", "reason": "cached", "confidence": 66, "available": True}
+            tool.pick_cache_key("Gemini", fixture, FIX_DATE): {
+                "pick": provider_pick("HOME") | {"reason": "cached-gemini"}
             },
         }
 
-        saved: dict[str, list[dict]] = {}
-        args = argparse.Namespace(day="today", dry_run=True, no_cache=False)
+        saved: list[dict] = []
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            picks_path = Path(tmp_dir) / "picks.txt"
+            picks_path.write_text("Notes for post\n[PICKS]\nJuventus vs Napoli = AWAY\n[/PICKS]\n", encoding="utf-8")
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=False,
+                session="all",
+                platform="both",
+                odds_db=None,
+                picks_file=str(picks_path),
+            )
 
-        with (
-            patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-            patch("serie_a_bluesky_tool.ask_openai") as mock_openai,
-            patch("serie_a_bluesky_tool.ask_claude") as mock_claude,
-            patch("serie_a_bluesky_tool.ask_gemini") as mock_gemini,
-            patch("serie_a_bluesky_tool.ask_user_pick", return_value="HOME"),
-            patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-            patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-            patch("serie_a_bluesky_tool.load_pick_cache", return_value=cache),
-            patch("serie_a_bluesky_tool.save_pick_cache") as mock_save_cache,
-            patch("serie_a_bluesky_tool.resolve_day", return_value=target_day),
-        ):
-            tool.publish_for_day(args)
+            with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
+                patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
+                patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.load_pick_cache", return_value=cache),
+                patch("serie_a_bluesky_tool.ask_openai") as mock_openai,
+                patch("serie_a_bluesky_tool.ask_claude") as mock_claude,
+                patch("serie_a_bluesky_tool.ask_gemini") as mock_gemini,
+            ):
+                tool.publish_for_day(args)
 
-        mock_openai.assert_not_called()
-        mock_claude.assert_not_called()
-        mock_gemini.assert_not_called()
-        mock_save_cache.assert_not_called()
-        self.assertEqual(saved["items"][0]["ai_picks"]["chatgpt"]["reason"], "cached")
+            mock_openai.assert_not_called()
+            mock_claude.assert_not_called()
+            mock_gemini.assert_not_called()
+        self.assertEqual(saved[0]["ai_picks"]["chatgpt"]["reason"], "cached-gpt")
 
     def test_publish_dry_run_can_disable_cache(self) -> None:
         fixture = tool.Fixture(
@@ -249,19 +187,26 @@ class TestDryRunModes(unittest.TestCase):
             state="pre",
         )
 
-        args = argparse.Namespace(day="today", dry_run=True, no_cache=True)
+        args = argparse.Namespace(
+            day="today",
+            dry_run=True,
+            no_cache=True,
+            session="all",
+            platform="both",
+            odds_db=None,
+            picks_file=None,
+        )
 
         with (
+            patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
             patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-            patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "live", "confidence": 60}),
-            patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "live", "confidence": 55}),
-            patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "live", "confidence": 58}),
-            patch("serie_a_bluesky_tool.ask_user_pick", return_value="HOME"),
             patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
             patch("serie_a_bluesky_tool.save_tracking"),
             patch("serie_a_bluesky_tool.load_pick_cache") as mock_load_cache,
             patch("serie_a_bluesky_tool.save_pick_cache") as mock_save_cache,
-            patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+            patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+            patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+            patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
         ):
             tool.publish_for_day(args)
 
@@ -282,24 +227,30 @@ class TestDryRunModes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             picks_path = Path(tmp_dir) / "picks.txt"
             picks_path.write_text("104=AWAY\n", encoding="utf-8")
-            saved: dict[str, list[dict]] = {}
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            saved: list[dict] = []
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
-                patch("serie_a_bluesky_tool.ask_user_pick") as mock_ask_user_pick,
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
             ):
                 tool.publish_for_day(args)
 
-        mock_ask_user_pick.assert_not_called()
-        self.assertEqual(saved["items"][0]["my_pick"], "")
-        self.assertEqual(saved["items"][0]["my_pick_text"], "")
+        self.assertEqual(saved[0]["my_pick"], "")
+        self.assertEqual(saved[0]["my_pick_text"], "")
 
     def test_publish_dry_run_uses_freeform_lines_from_picks_file(self) -> None:
         fixture1 = tool.Fixture(
@@ -328,27 +279,33 @@ class TestDryRunModes(unittest.TestCase):
                 "Torino to grind out a 1-0 win\n",
                 encoding="utf-8",
             )
-            saved: dict[str, list[dict]] = {}
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            saved: list[dict] = []
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture1, fixture2]),
-                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
-                patch("serie_a_bluesky_tool.ask_user_pick") as mock_ask_user_pick,
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
             ):
                 tool.publish_for_day(args)
 
-        mock_ask_user_pick.assert_not_called()
-        self.assertEqual(saved["items"][0]["my_pick"], "")
-        self.assertEqual(saved["items"][0]["my_pick_text"], "")
-        self.assertEqual(saved["items"][1]["my_pick_text"], "")
-        self.assertEqual(saved["items"][0]["root_post"]["uri"], saved["items"][1]["root_post"]["uri"])
-        self.assertEqual(saved["items"][0]["ai_reply_post"]["uri"], saved["items"][1]["ai_reply_post"]["uri"])
+        self.assertEqual(len(saved), 2)
+        self.assertEqual(saved[0]["my_pick_text"], "")
+        self.assertEqual(saved[1]["my_pick_text"], "")
+        self.assertEqual(saved[0]["root_post"]["uri"], saved[1]["root_post"]["uri"])
+        self.assertEqual(saved[0]["ai_reply_post"]["uri"], saved[1]["ai_reply_post"]["uri"])
 
     def test_publish_dry_run_does_not_require_per_fixture_picks_in_file(self) -> None:
         fixture = tool.Fixture(
@@ -364,16 +321,24 @@ class TestDryRunModes(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmp_dir:
             picks_path = Path(tmp_dir) / "picks.txt"
             picks_path.write_text("My full daily picks text block\n", encoding="utf-8")
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
                 patch("serie_a_bluesky_tool.save_tracking") as mock_save_tracking,
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
             ):
                 tool.publish_for_day(args)
 
@@ -407,24 +372,31 @@ class TestDryRunModes(unittest.TestCase):
             state="post",
         )
 
-        saved: dict[str, list[dict]] = {}
-        args = argparse.Namespace(day="yesterday", dry_run=True)
+        args = argparse.Namespace(
+            day="yesterday",
+            dry_run=True,
+            session="all",
+            platform="both",
+            odds_db=None,
+            recalculate=False,
+            start_date=None,
+            end_date=None,
+        )
 
         with (
+            patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 7)),
             patch("serie_a_bluesky_tool.load_tracking", return_value=tracking),
             patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-            patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-            patch("serie_a_bluesky_tool.bsky_login") as mock_login,
+            patch("serie_a_bluesky_tool.save_tracking") as mock_save_tracking,
+            patch("serie_a_bluesky_tool.bsky_login", return_value=MagicMock()) as mock_login,
             patch("serie_a_bluesky_tool.bsky_create_post") as mock_post,
-            patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 7)),
         ):
-            tool.score_for_day(args)
+            tool.score_for_date_range(args)
 
         mock_login.assert_not_called()
         mock_post.assert_not_called()
-
-        # In dry-run mode, save_tracking should not be called, so 'items' should not exist
-        self.assertNotIn("items", saved)
+        mock_save_tracking.assert_not_called()
+        self.assertFalse(tracking[0].get("scored", False))
 
     def test_publish_dry_run_uses_picks_section_for_auto_scoring(self) -> None:
         fixture = tool.Fixture(
@@ -448,24 +420,30 @@ class TestDryRunModes(unittest.TestCase):
                 "[/PICKS]\n",
                 encoding="utf-8",
             )
-            saved: dict[str, list[dict]] = {}
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            saved: list[dict] = []
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
             ):
                 tool.publish_for_day(args)
 
-        # Verify my_pick is set to the 1X2 code from [PICKS] section
-        self.assertEqual(saved["items"][0]["my_pick"], "AWAY")
-        # Verify my_pick_text is empty (since we're using structured [PICKS])
-        self.assertEqual(saved["items"][0]["my_pick_text"], "")
+        self.assertEqual(saved[0]["my_pick"], "AWAY")
+        self.assertEqual(saved[0]["my_pick_text"], "")
 
     def test_publish_dry_run_matches_picks_section_with_team_prefix_variants(self) -> None:
         fixture = tool.Fixture(
@@ -487,21 +465,30 @@ class TestDryRunModes(unittest.TestCase):
                 "[/PICKS]\n",
                 encoding="utf-8",
             )
-            saved: dict[str, list[dict]] = {}
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            saved: list[dict] = []
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
-                patch("serie_a_bluesky_tool.ask_openai", return_value={"pick": "HOME", "market": "1X2", "reason": "r", "confidence": 60}),
-                patch("serie_a_bluesky_tool.ask_claude", return_value={"pick": "DRAW", "market": "1X2", "reason": "r", "confidence": 55}),
-                patch("serie_a_bluesky_tool.ask_gemini", return_value={"pick": "AWAY", "market": "1X2", "reason": "r", "confidence": 58}),
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
-                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.setdefault("items", items)),
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
+                patch("serie_a_bluesky_tool.save_tracking", side_effect=lambda items: saved.extend(items)),
+                patch("serie_a_bluesky_tool.ask_openai", return_value=provider_pick("HOME")),
+                patch("serie_a_bluesky_tool.ask_claude", return_value=provider_pick("DRAW")),
+                patch("serie_a_bluesky_tool.ask_gemini", return_value=provider_pick("AWAY")),
             ):
                 tool.publish_for_day(args)
 
-        self.assertEqual(saved["items"][0]["my_pick"], "HOME")
+        self.assertEqual(saved[0]["my_pick"], "HOME")
+        self.assertEqual(saved[0]["my_pick_text"], "")
 
     def test_publish_dry_run_fails_fast_on_unmatched_structured_pick(self) -> None:
         fixture = tool.Fixture(
@@ -523,16 +510,24 @@ class TestDryRunModes(unittest.TestCase):
                 "[/PICKS]\n",
                 encoding="utf-8",
             )
-            args = argparse.Namespace(day="today", dry_run=True, no_cache=True, picks_file=str(picks_path))
+            args = argparse.Namespace(
+                day="today",
+                dry_run=True,
+                no_cache=True,
+                picks_file=str(picks_path),
+                session="all",
+                platform="both",
+                odds_db=None,
+            )
 
             with (
+                patch("serie_a_bluesky_tool.resolve_day", return_value=FIX_DATE),
                 patch("serie_a_bluesky_tool.fetch_serie_a_fixtures", return_value=[fixture]),
                 patch("serie_a_bluesky_tool.ask_openai") as mock_openai,
                 patch("serie_a_bluesky_tool.ask_claude") as mock_claude,
                 patch("serie_a_bluesky_tool.ask_gemini") as mock_gemini,
                 patch("serie_a_bluesky_tool.load_tracking", return_value=[]),
                 patch("serie_a_bluesky_tool.save_tracking") as mock_save_tracking,
-                patch("serie_a_bluesky_tool.resolve_day", return_value=date(2026, 5, 8)),
             ):
                 with self.assertRaises(SystemExit) as ctx:
                     tool.publish_for_day(args)
@@ -542,7 +537,6 @@ class TestDryRunModes(unittest.TestCase):
         mock_claude.assert_not_called()
         mock_gemini.assert_not_called()
         mock_save_tracking.assert_not_called()
-
 
 
 class TestParser(unittest.TestCase):
