@@ -144,6 +144,17 @@ By default, `publish` uses cached AI picks for the same fixture/day/provider/mod
 python3 serie_a_bluesky_tool.py publish --day today --dry-run --no-cache
 ```
 
+Use `--test-mode` for isolated testing runs:
+
+```bash
+python3 serie_a_bluesky_tool.py publish --day today --dry-run --test-mode
+```
+
+In `publish --test-mode`:
+
+- cache is fully disabled (no cache reads, no cache writes), and
+- tracking rows created by the run are tagged as test data (`"test_mode": true`).
+
 To run non-interactively, provide your picks in a text file.
 
 You can use fully free-form text with no structure (one non-empty line per fixture, in the same order shown by `fixtures`):
@@ -163,7 +174,7 @@ Lazio vs Internazionale=AWAY
 ```
 
 Then run:
-For automatic scoring of your picks, include a `[PICKS]` section with explicit 1X2 codes:
+For automatic scoring of your picks, include a `[PICKS]` section with explicit pick codes (1X2 or totals):
 
 ```text
 My picks for today:
@@ -173,10 +184,28 @@ Bologna has been playing well away recently.
 [PICKS]
 Napoli vs Bologna = HOME
 Juventus vs Roma = AWAY
+Inter vs Milan = OVER 2.5
+Lazio vs Torino = UNDER 1,1.5
 [/PICKS]
 ```
 
-The `[PICKS]` section is automatically removed from the Bluesky post (only the narrative text above it is posted), but the 1X2 codes are extracted and used for automatic scoring.
+The `[PICKS]` section is automatically removed from the Bluesky post (only the narrative text above it is posted), but the structured picks are extracted and used for automatic scoring.
+
+Supported structured pick formats:
+
+- 1X2: `HOME`, `DRAW`, `AWAY`
+- Totals whole line: `OVER X`, `UNDER X`
+- Totals half line: `OVER X.5`, `UNDER X.5`
+- Totals split line: `OVER X,X.5`, `UNDER X,X.5`, `OVER X.5,X+1`, `UNDER X.5,X+1`
+
+Examples:
+
+```text
+Cagliari vs Udinese = UNDER 1
+Roma vs Lazio = OVER 2.5
+Como vs Parma = OVER 1,1.5
+Genoa vs Milan = UNDER 1.5,2
+```
 
 Use the committed template file to bootstrap your local picks file once:
 
@@ -200,6 +229,8 @@ Morning narrative text...
 [PICKS]
 Inter vs Milan = HOME
 Juventus vs Roma = AWAY
+Napoli vs Lazio = OVER 2.5
+Atalanta vs Fiorentina = UNDER 1.5,2
 [/PICKS]
 [/MORNING]
 
@@ -222,10 +253,10 @@ When `--picks-file` is used, `publish` creates:
 - one root post containing the full text contents of `my_picks.txt`, and
 - one single reply to that root containing all ChatGPT/Claude/Gemini picks for the day's fixtures.
 
-When your picks-file text is not a strict 1X2 value (`HOME`/`DRAW`/`AWAY`), it is posted as-is on Bluesky and your personal pick is marked as unavailable for automatic result scoring.
+When your picks-file text is not a supported structured pick value in `[PICKS]`, it is posted as-is on Bluesky and your personal pick is marked as unavailable for automatic result scoring.
 
 AI reply previews/posts are shown with human-readable pick text (for example, `Napoli to win`, `Draw`) rather than only 1X2 codes.
-**Note on scoring:** If you include a `[PICKS]` section with explicit 1X2 codes (HOME/DRAW/AWAY), your picks will be automatically scored when you run `score` after the matches finish. If you don't include a `[PICKS]` section, your freeform picks text is posted as-is on Bluesky, but automatic scoring is not available for your picks.
+**Note on scoring:** If you include a `[PICKS]` section with explicit structured picks (1X2 and/or totals), your picks will be automatically scored when you run `score` after the matches finish. If you don't include a `[PICKS]` section, your freeform picks text is posted as-is on Bluesky, but automatic scoring is not available for your picks.
 
 ### Score yesterday's picks and post updates
 
@@ -259,15 +290,52 @@ Test mode (no posting):
 python3 serie_a_bluesky_tool.py score --day yesterday --dry-run
 ```
 
+To score only test runs, add `--test-mode`:
+
+```bash
+python3 serie_a_bluesky_tool.py score --day yesterday --dry-run --test-mode
+```
+
+To simulate hypothetical outcomes in test mode, provide a JSON file with fixture score overrides:
+
+```bash
+python3 serie_a_bluesky_tool.py score --day yesterday --dry-run --test-mode --sim-results-file data/sim_results.json
+```
+
+`data/sim_results.json` supports either format. You can identify fixtures by either `fixture_id` or user-friendly matchup text (`Home vs Away`):
+
+```json
+{
+   "Inter vs Milan": {"home_score": 2, "away_score": 1},
+   "Napoli vs Lazio": {"home_score": 0, "away_score": 0}
+}
+```
+
+or:
+
+```json
+[
+   {"matchup": "Inter vs Milan", "home_score": 2, "away_score": 1},
+   {"fixture_id": "401547124", "home_score": 0, "away_score": 0}
+]
+```
+
+Safety guardrails: `--sim-results-file` is only accepted when both `--test-mode` and `--dry-run` are enabled.
+
 When all tracked fixtures for that day are final, `score` posts one scoreboard reply to the existing thread, ordered as Minvest, Gemini, Claude, ChatGPT.
 
 For both Bluesky and X, the scoreboard reply is posted as a reply to the AI picks reply (not directly to the root post).
 
 With `--dry-run`, it prints the scoreboard preview without posting and without marking tracked picks as scored.
 
+`score` behavior with test mode:
+
+- default (`--test-mode` not set): ignores test-tagged tracking rows,
+- with `--test-mode`: scores only test-tagged tracking rows.
+
 ## Notes and current assumptions
 
-- Picks are constrained to 1X2 (`HOME`, `DRAW`, `AWAY`) to allow automatic scoring.
+- Structured picks in `[PICKS]` support 1X2 and totals (including split/quarter lines).
 - Fixture feed source is ESPN Serie A scoreboard API.
 - Bluesky posts are capped to 300 characters.
 

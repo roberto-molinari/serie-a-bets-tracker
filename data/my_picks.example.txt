@@ -13,11 +13,11 @@ Inter/Verona - Inter ML
 
 [PICKS]
 Roma vs Lazio = DRAW
-Como vs Parma = DRAW
-Genoa vs Milan = DRAW
+Como vs Parma = OVER 1,1.5
+Genoa vs Milan = UNDER 1.5,2
 Juventus vs Fiorentina = HOME
 Pisa vs Napoli = AWAY
-Inter vs Verona = HOME
+Inter vs Verona = OVER 2.5
 [/PICKS]
 [/MORNING]
 
@@ -31,9 +31,9 @@ Cagliari/Torino - Cagliari ML
 Atalanta/Bologna - Draw
 
 [PICKS]
-Udinese vs Cremonese = HOME
+Udinese vs Cremonese = UNDER 1
 Sassuolo vs Lecce = HOME
 Cagliari vs Torino = HOME
-Atalanta vs Bologna = DRAW
+Atalanta vs Bologna = OVER 2
 [/PICKS]
 [/AFTERNOON]

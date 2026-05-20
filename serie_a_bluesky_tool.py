@@ -15,7 +15,7 @@ TEAM_ALIASES = {
 import sqlite3
 
 
-def get_fixture_odds(conn, match_date, home_team, away_team):
+def get_fixture_odds(conn, match_date, home_team, away_team, allow_nearby_date: bool = False):
     """Return latest 1X2 odds dict for a fixture date/team tuple, or None."""
     canon_home = canonicalize_team_name(home_team)
     canon_away = canonicalize_team_name(away_team)
@@ -41,6 +41,77 @@ def get_fixture_odds(conn, match_date, home_team, away_team):
     row = cur.fetchone()
     if row:
         return {"HOME": row[0], "DRAW": row[1], "AWAY": row[2]}
+
+    if allow_nearby_date:
+        cur.execute(
+            """
+            SELECT o.home_moneyline, o.draw_moneyline, o.away_moneyline
+            FROM soccer_betting_odds o
+            JOIN soccer_matches m ON o.match_id = m.match_id
+            JOIN soccer_teams th ON m.home_team_id = th.team_id
+            JOIN soccer_teams ta ON m.away_team_id = ta.team_id
+            WHERE th.name = ?
+              AND ta.name = ?
+              AND abs(julianday(date(m.match_date)) - julianday(?)) <= 3
+            ORDER BY abs(julianday(date(m.match_date)) - julianday(?)) ASC, o.odds_date DESC
+            LIMIT 1
+            """,
+            (db_home, db_away, match_date, match_date),
+        )
+        row = cur.fetchone()
+        if row:
+            return {"HOME": row[0], "DRAW": row[1], "AWAY": row[2]}
+    return None
+
+
+def get_fixture_totals_odds(conn, match_date, home_team, away_team, line, allow_nearby_date: bool = False):
+    """Return latest totals odds dict for an exact line, or None."""
+    canon_home = canonicalize_team_name(home_team)
+    canon_away = canonicalize_team_name(away_team)
+    db_home = TEAM_ALIASES.get(canon_home, home_team)
+    db_away = TEAM_ALIASES.get(canon_away, away_team)
+
+    cur = conn.cursor()
+    cur.execute(
+        """
+        SELECT o.over_under, o.over_odds, o.under_odds
+        FROM soccer_betting_odds o
+        JOIN soccer_matches m ON o.match_id = m.match_id
+        JOIN soccer_teams th ON m.home_team_id = th.team_id
+        JOIN soccer_teams ta ON m.away_team_id = ta.team_id
+        WHERE date(m.match_date) = ?
+          AND th.name = ?
+          AND ta.name = ?
+          AND abs(o.over_under - ?) < 0.0001
+        ORDER BY o.odds_date DESC
+        LIMIT 1
+        """,
+        (match_date, db_home, db_away, float(line)),
+    )
+    row = cur.fetchone()
+    if row:
+        return {"line": float(row[0]), "OVER": row[1], "UNDER": row[2]}
+
+    if allow_nearby_date:
+        cur.execute(
+            """
+            SELECT o.over_under, o.over_odds, o.under_odds
+            FROM soccer_betting_odds o
+            JOIN soccer_matches m ON o.match_id = m.match_id
+            JOIN soccer_teams th ON m.home_team_id = th.team_id
+            JOIN soccer_teams ta ON m.away_team_id = ta.team_id
+            WHERE th.name = ?
+              AND ta.name = ?
+              AND abs(o.over_under - ?) < 0.0001
+              AND abs(julianday(date(m.match_date)) - julianday(?)) <= 3
+            ORDER BY abs(julianday(date(m.match_date)) - julianday(?)) ASC, o.odds_date DESC
+            LIMIT 1
+            """,
+            (db_home, db_away, float(line), match_date, match_date),
+        )
+        row = cur.fetchone()
+        if row:
+            return {"line": float(row[0]), "OVER": row[1], "UNDER": row[2]}
     return None
 #!/usr/bin/env python3
 """Serie A value-pick publisher and scorer for Bluesky.
@@ -75,6 +146,7 @@ GEMINI_ENDPOINT_TMPL = "https://generativelanguage.googleapis.com/v1beta/models/
 BSKY_HOST = "https://bsky.social"
 
 ALLOWED_PICKS = {"HOME", "DRAW", "AWAY"}
+ALLOWED_TOTAL_SIDES = {"OVER", "UNDER"}
 
 
 @dataclass
@@ -123,6 +195,103 @@ def load_pick_cache() -> dict[str, dict[str, Any]]:
 def save_pick_cache(items: dict[str, dict[str, Any]]) -> None:
     ensure_storage()
     PICK_CACHE_FILE.write_text(json.dumps(items, indent=2) + "\n", encoding="utf-8")
+
+
+def load_simulated_results(path: str) -> dict[str, dict[str, int]]:
+    """Load simulated final scores keyed by fixture reference for test scoring.
+
+    Supported JSON formats:
+    - object map: {"<fixture_id_or_matchup>": {"home_score": 2, "away_score": 1}}
+    - list rows: [{"fixture_id": "<id>", "home_score": 2, "away_score": 1}]
+      or [{"matchup": "Home vs Away", "home_score": 2, "away_score": 1}]
+    """
+    try:
+        raw = Path(path).read_text(encoding="utf-8")
+    except OSError as e:
+        raise SystemExit(f"Could not read simulated results file '{path}': {e}")
+
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as e:
+        raise SystemExit(f"Invalid JSON in simulated results file '{path}': {e}")
+
+    normalized: dict[str, dict[str, int]] = {}
+
+    if isinstance(parsed, dict):
+        items = parsed.items()
+        for fixture_ref, row in items:
+            if not isinstance(row, dict):
+                raise SystemExit("Each simulated result must be an object with home_score and away_score.")
+            try:
+                home_score = int(row["home_score"])
+                away_score = int(row["away_score"])
+            except (KeyError, TypeError, ValueError):
+                raise SystemExit(
+                    f"Invalid simulated result for fixture '{fixture_ref}'. "
+                    "Expected numeric home_score and away_score."
+                )
+            normalized[str(fixture_ref).strip()] = {"home_score": home_score, "away_score": away_score}
+        return normalized
+
+    if isinstance(parsed, list):
+        for idx, row in enumerate(parsed, start=1):
+            if not isinstance(row, dict):
+                raise SystemExit(f"Invalid simulated result entry #{idx}: expected object.")
+            fixture_ref = str(row.get("fixture_id", "")).strip()
+            if not fixture_ref:
+                fixture_ref = str(row.get("matchup", "")).strip()
+            if not fixture_ref:
+                fixture_ref = str(row.get("fixture", "")).strip()
+            if not fixture_ref:
+                fixture_ref = str(row.get("match", "")).strip()
+            if not fixture_ref:
+                raise SystemExit(
+                    f"Invalid simulated result entry #{idx}: missing fixture reference "
+                    "(fixture_id or matchup)."
+                )
+            try:
+                home_score = int(row["home_score"])
+                away_score = int(row["away_score"])
+            except (KeyError, TypeError, ValueError):
+                raise SystemExit(
+                    f"Invalid simulated result entry #{idx} for fixture '{fixture_ref}'. "
+                    "Expected numeric home_score and away_score."
+                )
+            normalized[fixture_ref] = {"home_score": home_score, "away_score": away_score}
+        return normalized
+
+    raise SystemExit("Simulated results JSON must be an object map or a list of fixture rows.")
+
+
+def resolve_simulated_fixture_ref(fixture_ref: str, fixtures_by_id: dict[str, Fixture]) -> str:
+    raw_ref = str(fixture_ref).strip()
+    if not raw_ref:
+        return ""
+
+    if raw_ref in fixtures_by_id:
+        return raw_ref
+
+    matchup = split_matchup_text(raw_ref)
+    if not matchup:
+        return ""
+
+    wanted_key = canonical_matchup_key(matchup[0], matchup[1])
+    matched_ids = [
+        fixture_id
+        for fixture_id, fixture in fixtures_by_id.items()
+        if canonical_matchup_key(fixture.home, fixture.away) == wanted_key
+    ]
+
+    if len(matched_ids) == 1:
+        return matched_ids[0]
+
+    if len(matched_ids) > 1:
+        raise SystemExit(
+            f"Ambiguous simulated fixture reference '{raw_ref}'. "
+            "Multiple fixtures matched; use fixture_id instead."
+        )
+
+    return ""
 
 
 def today_utc() -> date:
@@ -259,17 +428,164 @@ def safe_json_extract(text: str) -> dict[str, Any]:
     return json.loads(text[start : end + 1])
 
 
+def format_line_value(line: float) -> str:
+    if float(line).is_integer():
+        return str(int(line))
+    return f"{line:.1f}"
+
+
+def parse_totals_selection(text: str) -> tuple[str, list[float]] | None:
+    raw = " ".join(text.strip().upper().split())
+    match = re.match(r"^(OVER|UNDER)\s+([0-9]+(?:\.[05])?)\s*(?:,\s*([0-9]+(?:\.[05])?))?$", raw)
+    if not match:
+        return None
+
+    side = str(match.group(1))
+    first = float(match.group(2))
+    second_raw = match.group(3)
+
+    if second_raw is None:
+        return side, [first]
+
+    second = float(second_raw)
+    leg1, leg2 = (first, second) if first <= second else (second, first)
+
+    # Quarter-line splits are the only valid two-leg totals inputs:
+    # X,X.5 or X.5,X+1
+    if abs(leg2 - leg1 - 0.5) > 1e-9:
+        return None
+    if leg1 % 0.5 != 0 or leg2 % 0.5 != 0:
+        return None
+
+    return side, [leg1, leg2]
+
+
+def parse_pick_spec(raw_pick: str) -> dict[str, Any] | None:
+    normalized = raw_pick.strip().upper()
+    if normalized in ALLOWED_PICKS:
+        return {"market": "1X2", "pick": normalized}
+
+    totals = parse_totals_selection(normalized)
+    if totals is None:
+        return None
+
+    side, line_legs = totals
+    line_text = ",".join(format_line_value(v) for v in line_legs)
+    return {
+        "market": "TOTAL_GOALS",
+        "pick": f"{side} {line_text}",
+        "side": side,
+        "line_legs": line_legs,
+    }
+
+
+def settle_totals_pick(total_goals: int, side: str, line_legs: list[float]) -> tuple[float, float]:
+    if side not in ALLOWED_TOTAL_SIDES or not line_legs:
+        return 0.0, 0.0
+
+    leg_stake = 1.0 / float(len(line_legs))
+    win_units = 0.0
+    push_units = 0.0
+
+    for line in line_legs:
+        if side == "OVER":
+            if total_goals > line:
+                win_units += leg_stake
+            elif total_goals == line:
+                push_units += leg_stake
+        else:
+            if total_goals < line:
+                win_units += leg_stake
+            elif total_goals == line:
+                push_units += leg_stake
+
+    return win_units, push_units
+
+
+def settle_totals_leg(total_goals: int, side: str, line: float) -> tuple[float, float]:
+    if side not in ALLOWED_TOTAL_SIDES:
+        return 0.0, 0.0
+    if side == "OVER":
+        if total_goals > line:
+            return 1.0, 0.0
+        if total_goals == line:
+            return 0.0, 1.0
+        return 0.0, 0.0
+
+    if total_goals < line:
+        return 1.0, 0.0
+    if total_goals == line:
+        return 0.0, 1.0
+    return 0.0, 0.0
+
+
+def pick_spec_from_ai_pick_data(pick_data: dict[str, Any]) -> dict[str, Any] | None:
+    market = str(pick_data.get("market", "")).strip().upper()
+    pick = str(pick_data.get("pick", "")).strip().upper()
+
+    if pick in ALLOWED_PICKS:
+        return {"market": "1X2", "pick": pick}
+
+    if market in {"TOTAL_GOALS", "TOTALS"}:
+        side = str(pick_data.get("side", pick)).strip().upper()
+        line_legs_raw = pick_data.get("line_legs")
+        if isinstance(line_legs_raw, list) and line_legs_raw:
+            line_legs = sorted(float(v) for v in line_legs_raw)
+            line_text = ",".join(format_line_value(v) for v in line_legs)
+            return {
+                "market": "TOTAL_GOALS",
+                "pick": f"{side} {line_text}",
+                "side": side,
+                "line_legs": line_legs,
+            }
+
+        line_raw = pick_data.get("line")
+        if line_raw is not None and side in ALLOWED_TOTAL_SIDES:
+            parsed = parse_totals_selection(f"{side} {line_raw}")
+            if parsed is not None:
+                parsed_side, parsed_legs = parsed
+                line_text = ",".join(format_line_value(v) for v in parsed_legs)
+                return {
+                    "market": "TOTAL_GOALS",
+                    "pick": f"{parsed_side} {line_text}",
+                    "side": parsed_side,
+                    "line_legs": parsed_legs,
+                }
+
+    parsed_pick = parse_pick_spec(pick)
+    return parsed_pick
+
+
 def pick_prompt(home: str, away: str) -> str:
     return (
         "Return only valid JSON with this exact schema: "
-        '{"pick":"HOME|DRAW|AWAY","market":"1X2","reason":"short text","confidence":0}. '
-        f"Match: {home} vs {away}. Give one value betting pick in 1X2 market."
+        '{"market":"1X2|TOTAL_GOALS","pick":"HOME|DRAW|AWAY|OVER|UNDER","line":"required for TOTAL_GOALS (e.g. 2, 2.5, 2,2.5, 2.5,3)","reason":"short text","confidence":0}. '
+        f"Match: {home} vs {away}. Choose the single best value pick across BOTH markets (1X2 or TOTAL_GOALS). "
+        "Do not default to 1X2 if a totals angle looks better. "
+        "If market is TOTAL_GOALS, pick must be OVER or UNDER and line must be provided."
     )
 
 
 def normalize_pick(raw: dict[str, Any], provider: str) -> dict[str, Any]:
+    market_raw = str(raw.get("market", "")).strip().upper()
     pick = str(raw.get("pick", "")).strip().upper()
-    if pick not in ALLOWED_PICKS:
+
+    parsed_spec: dict[str, Any] | None = None
+
+    if pick in ALLOWED_PICKS:
+        parsed_spec = {"market": "1X2", "pick": pick}
+    elif market_raw in {"TOTAL_GOALS", "TOTALS"}:
+        side = str(raw.get("side", pick)).strip().upper()
+        line_raw = raw.get("line", "")
+        line_text = str(line_raw).strip()
+        if side in ALLOWED_TOTAL_SIDES and line_text:
+            parsed_spec = parse_pick_spec(f"{side} {line_text}")
+        else:
+            parsed_spec = parse_pick_spec(pick)
+    else:
+        parsed_spec = parse_pick_spec(pick)
+
+    if parsed_spec is None:
         raise SystemExit(f"{provider} returned invalid pick: {pick}")
 
     confidence = raw.get("confidence", 0)
@@ -280,8 +596,11 @@ def normalize_pick(raw: dict[str, Any], provider: str) -> dict[str, Any]:
     confidence_int = max(0, min(100, confidence_int))
 
     return {
-        "pick": pick,
-        "market": "1X2",
+        "pick": parsed_spec["pick"],
+        "market": parsed_spec["market"],
+        "side": parsed_spec.get("side", ""),
+        "line_legs": parsed_spec.get("line_legs", []),
+        "line": ",".join(format_line_value(v) for v in parsed_spec.get("line_legs", [])),
         "reason": str(raw.get("reason", "No reason provided")).strip(),
         "confidence": confidence_int,
         "available": True,
@@ -370,6 +689,9 @@ def format_ai_pick_line(name: str, pick_data: dict[str, Any]) -> str:
     pick = str(pick_data.get("pick", "")).strip().upper()
     if pick in ALLOWED_PICKS:
         return f"- {name}: {pick} ({int(pick_data.get('confidence', 0))}%)"
+    parsed_spec = pick_spec_from_ai_pick_data(pick_data)
+    if parsed_spec and parsed_spec.get("market") == "TOTAL_GOALS":
+        return f"- {name}: {parsed_spec.get('pick')} ({int(pick_data.get('confidence', 0))}%)"
     return f"- {name}: unavailable"
 
 
@@ -393,7 +715,8 @@ def format_scoreboard_line(name: str, wins: int, total: int) -> str:
         status = "🟡"
     else:
         status = "🔴"
-    return f"{name}: {wins}/{total} {status}"
+    wins_text = format_line_value(float(wins)) if isinstance(wins, float) else str(wins)
+    return f"{name}: {wins_text}/{total} {status}"
 
 
 def build_scoreboard_reply(day_label: str, participant_rows: list[tuple[str, int, int]]) -> str:
@@ -404,7 +727,7 @@ def build_scoreboard_reply(day_label: str, participant_rows: list[tuple[str, int
 
 def build_scoreboard_reply_with_payout(
     day_label: str,
-    participant_rows: list[tuple[str, int, int, int, float, int]],
+    participant_rows: list[tuple[str, float, int, float, float, float]],
 ) -> str:
     lines = [f"Scoreboard for {day_label}", ""]
     for name, wins, total, odds_bets, returns, missing_odds in participant_rows:
@@ -417,9 +740,9 @@ def build_scoreboard_reply_with_payout(
             metrics = " | return: 0.00u | ROI: n/a"
 
         if missing_odds > 0:
-            metrics += f" | partial: missing odds for {missing_odds} pick(s)"
+            metrics += f" | partial: missing odds for {format_line_value(float(missing_odds))}u"
 
-        lines.append(f"{name}: {wins}/{total} {status}{metrics}")
+        lines.append(f"{name}: {format_line_value(float(wins))}/{total} {status}{metrics}")
     return "\n".join(lines)
 
 
@@ -430,6 +753,13 @@ def human_pick_text(pick: str, home: str, away: str) -> str:
         return f"{away} to win"
     if pick == "DRAW":
         return "Draw"
+
+    totals = parse_totals_selection(pick)
+    if totals is not None:
+        side, line_legs = totals
+        line_text = ",".join(format_line_value(v) for v in line_legs)
+        return f"{side.title()} {line_text} goals"
+
     return ""
 
 
@@ -689,7 +1019,7 @@ def validate_structured_picks_for_fixtures(structured_picks: dict[str, str], fix
         joined = "; ".join(missing)
         raise SystemExit(
             "Invalid [PICKS] section: missing or unmatched picks for fixtures: "
-            f"{joined}. Use 'Home vs Away = HOME|DRAW|AWAY'. "
+            f"{joined}. Use 'Home vs Away = HOME|DRAW|AWAY' or 'Home vs Away = OVER 2.5'. "
             "Aborting before AI calls, posting, cache writes, or tracking updates."
         )
 
@@ -697,7 +1027,7 @@ def validate_structured_picks_for_fixtures(structured_picks: dict[str, str], fix
 def extract_structured_picks(raw_text: str) -> dict[str, str]:
     """Extract picks from [PICKS] / [/PICKS] markers.
     
-    Returns dict mapping normalized team names to 1X2 codes (HOME, DRAW, AWAY).
+    Returns dict mapping normalized team names to normalized pick text.
     """
     picks_by_fixture_key: dict[str, str] = {}
     
@@ -713,21 +1043,27 @@ def extract_structured_picks(raw_text: str) -> dict[str, str]:
 
             fixture_part, pick_part = stripped.split("=", 1)
             fixture_part = fixture_part.strip()
-            pick_part = pick_part.strip().upper()
+            pick_part = " ".join(pick_part.strip().upper().split())
 
             if not fixture_part or not pick_part:
                 continue
 
-            if pick_part not in ALLOWED_PICKS:
-                raise SystemExit(f"Invalid pick in [PICKS] section: '{pick_part}' (must be HOME, DRAW, or AWAY)")
+            parsed_pick = parse_pick_spec(pick_part)
+            if parsed_pick is None:
+                raise SystemExit(
+                    f"Invalid pick in [PICKS] section: '{pick_part}' "
+                    "(must be HOME/DRAW/AWAY or OVER/UNDER with valid totals line)"
+                )
+
+            normalized_pick = str(parsed_pick.get("pick", pick_part))
 
             fixture_key = normalize_picks_file_key(fixture_part)
-            picks_by_fixture_key[fixture_key] = pick_part
+            picks_by_fixture_key[fixture_key] = normalized_pick
 
             matchup = split_matchup_text(fixture_part)
             if matchup is not None:
                 parsed_home, parsed_away = matchup
-                picks_by_fixture_key[canonical_matchup_key(parsed_home, parsed_away)] = pick_part
+                picks_by_fixture_key[canonical_matchup_key(parsed_home, parsed_away)] = normalized_pick
     
     return picks_by_fixture_key
 
@@ -869,32 +1205,57 @@ def pick_from_file(picks_data: dict[str, Any], fixture: Fixture, order_index: in
     return None
 
 
-def normalize_my_pick_for_scoring(raw_pick_text: str) -> str:
-    normalized = raw_pick_text.strip().upper()
-    if normalized in ALLOWED_PICKS:
-        return normalized
-    return ""
+def normalize_my_pick_for_scoring(raw_pick_text: str) -> dict[str, Any] | None:
+    return parse_pick_spec(raw_pick_text)
 
 
 def short_pick_for_reply(pick_data: dict[str, Any], home: str, away: str) -> str:
-    pick = str(pick_data.get("pick", "")).strip().upper()
-    if pick == "HOME":
+    parsed = pick_spec_from_ai_pick_data(pick_data)
+    if not parsed:
+        return "N/A"
+
+    market = str(parsed.get("market", "")).upper()
+    pick = str(parsed.get("pick", "")).strip().upper()
+
+    if market == "1X2" and pick == "HOME":
         return home
-    if pick == "AWAY":
+    if market == "1X2" and pick == "AWAY":
         return away
-    if pick == "DRAW":
+    if market == "1X2" and pick == "DRAW":
         return "Draw"
+
+    if market == "TOTAL_GOALS":
+        side = str(parsed.get("side", "")).upper()
+        line_legs = [float(v) for v in parsed.get("line_legs", [])]
+        if side in ALLOWED_TOTAL_SIDES and line_legs:
+            line_text = ",".join(format_line_value(v) for v in line_legs)
+            return f"{side.title()} {line_text}"
+
     return "N/A"
 
 
 def short_pick_code_for_reply(pick_data: dict[str, Any]) -> str:
-    pick = str(pick_data.get("pick", "")).strip().upper()
-    if pick == "HOME":
+    parsed = pick_spec_from_ai_pick_data(pick_data)
+    if not parsed:
+        return "?"
+
+    market = str(parsed.get("market", "")).upper()
+    pick = str(parsed.get("pick", "")).strip().upper()
+
+    if market == "1X2" and pick == "HOME":
         return "H"
-    if pick == "AWAY":
+    if market == "1X2" and pick == "AWAY":
         return "A"
-    if pick == "DRAW":
+    if market == "1X2" and pick == "DRAW":
         return "D"
+
+    if market == "TOTAL_GOALS":
+        side = str(parsed.get("side", "")).upper()
+        line_legs = [float(v) for v in parsed.get("line_legs", [])]
+        if side in ALLOWED_TOTAL_SIDES and line_legs:
+            line_text = ",".join(format_line_value(v) for v in line_legs)
+            return f"{'O' if side == 'OVER' else 'U'}{line_text}"
+
     return "?"
 
 
@@ -940,6 +1301,7 @@ def build_x_aggregate_ai_reply(prefetched: list[tuple[Fixture, dict[str, Any], d
 def publish_for_day(args: argparse.Namespace) -> None:
     target_day = resolve_day(args.day)
     session_filter = getattr(args, "session", "all")
+    test_mode = bool(getattr(args, "test_mode", False))
     picks_data = load_picks_file(args.picks_file, session_filter=session_filter) if getattr(args, "picks_file", None) else None
 
     fixtures = filter_fixtures_by_session(fetch_serie_a_fixtures(target_day), session_filter)
@@ -954,7 +1316,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
         validate_structured_picks_for_fixtures(picks_data.get("structured_picks", {}), fixtures)
 
     dry_run = bool(getattr(args, "dry_run", False))
-    use_cache = not bool(getattr(args, "no_cache", False))
+    use_cache = (not bool(getattr(args, "no_cache", False))) and (not test_mode)
     session = None
     tracking = load_tracking()
     pick_cache = load_pick_cache() if use_cache else {}
@@ -1071,6 +1433,7 @@ def publish_for_day(args: argparse.Namespace) -> None:
                     "fixture_date": target_day.isoformat(),
                     "home": fixture.home,
                     "away": fixture.away,
+                    "test_mode": test_mode,
                     "session": fixture_session_label(fixture),
                     "my_pick": my_pick_scoring,
                     "my_pick_text": my_pick_text,
@@ -1111,6 +1474,7 @@ def score_for_date_range(args: argparse.Namespace) -> None:
     start_date_str = getattr(args, "start_date", None)
     end_date_str = getattr(args, "end_date", None)
     day_str = getattr(args, "day", None)
+    test_mode = bool(getattr(args, "test_mode", False))
 
     if day_str:
         start_date = end_date = resolve_day(day_str)
@@ -1122,11 +1486,22 @@ def score_for_date_range(args: argparse.Namespace) -> None:
 
     session_filter = getattr(args, "session", "all")
     recalculate = getattr(args, "recalculate", False)
+    dry_run = bool(getattr(args, "dry_run", False))
+    simulated_results_path = getattr(args, "sim_results_file", None)
+
+    if simulated_results_path and (not test_mode or not dry_run):
+        raise SystemExit("--sim-results-file is only allowed with --test-mode and --dry-run.")
+
     tracking = load_tracking()
+
+    if test_mode:
+        source_items = [i for i in tracking if bool(i.get("test_mode", False))]
+    else:
+        source_items = [i for i in tracking if not bool(i.get("test_mode", False))]
     
     # Filter items within the date range
     date_items = [
-        i for i in tracking 
+        i for i in source_items
         if start_date <= datetime.strptime(i.get("fixture_date"), "%Y-%m-%d").date() <= end_date
     ]
 
@@ -1173,7 +1548,36 @@ def score_for_date_range(args: argparse.Namespace) -> None:
             all_fixtures[f.fixture_id] = f
         current_date += timedelta(days=1)
 
-    dry_run = bool(getattr(args, "dry_run", False))
+    if simulated_results_path:
+        simulated_results = load_simulated_results(simulated_results_path)
+        unresolved_refs: list[str] = []
+        for fixture_ref, result in simulated_results.items():
+            fixture_id = resolve_simulated_fixture_ref(fixture_ref, all_fixtures)
+            if not fixture_id:
+                unresolved_refs.append(str(fixture_ref))
+                continue
+
+            fixture = all_fixtures.get(fixture_id)
+            if not fixture:
+                unresolved_refs.append(str(fixture_ref))
+                continue
+
+            all_fixtures[fixture_id] = Fixture(
+                fixture_id=fixture.fixture_id,
+                date_utc=fixture.date_utc,
+                home=fixture.home,
+                away=fixture.away,
+                home_score=int(result["home_score"]),
+                away_score=int(result["away_score"]),
+                state="post",
+            )
+
+        if unresolved_refs:
+            unresolved_text = ", ".join(unresolved_refs)
+            raise SystemExit(
+                "Could not resolve simulated fixture reference(s): "
+                f"{unresolved_text}. Use fixture_id or 'Home vs Away' for fixtures in the selected date range."
+            )
 
     odds_db_path = getattr(args, "odds_db", None)
     odds_conn = None
@@ -1210,6 +1614,7 @@ def score_for_date_range(args: argparse.Namespace) -> None:
                     fixture.date_utc[:10],
                     fixture.home,
                     fixture.away,
+                    allow_nearby_date=True,
                 )
             except Exception as e:
                 print(f"[Warning] Odds lookup failed for {fixture.home} vs {fixture.away}: {e}")
@@ -1217,55 +1622,137 @@ def score_for_date_range(args: argparse.Namespace) -> None:
 
         final_rows.append({"item": item, "fixture": fixture, "outcome": outcome, "odds": odds})
 
-    if odds_conn:
-        odds_conn.close()
-
     if pending_rows:
+        if odds_conn:
+            odds_conn.close()
         print("Waiting for all tracked matches to finish before posting the scoreboard:")
         for row in pending_rows:
             print(f"- {row}")
         return
 
     if not final_rows:
+        if odds_conn:
+            odds_conn.close()
         print("No final tracked matches found for the specified date range.")
         return
 
     total_matches = len(final_rows)
-    participant_rows: list[tuple[str, int, int, int, float, int]] = []
+    participant_rows: list[tuple[str, float, int, float, float, float]] = []
     for label, key in (("Minvest", "my_pick"), ("Gemini", "gemini"), ("Claude", "claude"), ("ChatGPT", "chatgpt")):
-        wins = 0
-        odds_bets = 0
+        wins = 0.0
+        odds_bets = 0.0
         returns = 0.0
-        graded_picks = 0
+        graded_picks = 0.0
         for row in final_rows:
             outcome = row["outcome"]
             item = row["item"]
+            fixture = row["fixture"]
             odds = row.get("odds")
             if key == "my_pick":
-                pick = normalize_my_pick_for_scoring(str(item.get("my_pick", "")))
+                pick_spec = normalize_my_pick_for_scoring(str(item.get("my_pick", "")))
             else:
                 pick_data = item.get("ai_picks", {}).get(key, {})
-                pick = str(pick_data.get("pick", "")).strip().upper()
+                pick_spec = pick_spec_from_ai_pick_data(pick_data)
 
-            if pick not in ALLOWED_PICKS:
+            if not pick_spec:
                 continue
 
-            graded_picks += 1
+            graded_picks += 1.0
 
-            if odds and pick in odds and odds[pick] is not None:
-                odds_bets += 1
+            market = str(pick_spec.get("market", "")).upper()
+            if market == "1X2":
+                pick = str(pick_spec.get("pick", "")).strip().upper()
+                has_odds = bool(odds and pick in odds and odds[pick] is not None)
+                if has_odds:
+                    odds_bets += 1.0
 
-            if pick == outcome:
-                wins += 1
-                if odds and pick in odds and odds[pick] is not None:
-                    odd = odds[pick]
-                    if odd > 0:
-                        returns += 1 + (odd / 100)
+                if pick == outcome:
+                    wins += 1.0
+                    if has_odds:
+                        odd = float(odds[pick])
+                        if odd > 0:
+                            returns += 1 + (odd / 100)
+                        else:
+                            returns += 1 + (100 / abs(odd))
+                continue
+
+            if market == "TOTAL_GOALS":
+                side = str(pick_spec.get("side", "")).upper()
+                line_legs = [float(v) for v in pick_spec.get("line_legs", [])]
+                if side not in ALLOWED_TOTAL_SIDES or not line_legs:
+                    continue
+
+                total_goals = int(fixture.home_score or 0) + int(fixture.away_score or 0)
+                win_units, push_units = settle_totals_pick(total_goals, side, line_legs)
+                wins += win_units
+
+                # Prefer a direct quarter-line price for split picks when available
+                # (e.g. OVER 2.5,3 can be priced from OVER 2.75).
+                if len(line_legs) == 2 and abs(line_legs[1] - line_legs[0] - 0.5) < 1e-9:
+                    quarter_line = (line_legs[0] + line_legs[1]) / 2.0
+                    quarter_odds = None
+                    if odds_conn:
+                        quarter_odds = get_fixture_totals_odds(
+                            odds_conn,
+                            fixture.date_utc[:10],
+                            fixture.home,
+                            fixture.away,
+                            quarter_line,
+                            allow_nearby_date=True,
+                        )
+
+                    quarter_odd = None
+                    if quarter_odds and side in quarter_odds:
+                        quarter_odd = quarter_odds.get(side)
+
+                    if quarter_odd is not None:
+                        odds_bets += 1.0
+                        odd_value = float(quarter_odd)
+                        if odd_value > 0:
+                            win_return = 1 + (odd_value / 100)
+                        else:
+                            win_return = 1 + (100 / abs(odd_value))
+
+                        returns += (win_units * win_return) + push_units
+                        continue
+
+                leg_stake = 1.0 / float(len(line_legs))
+                for leg_line in line_legs:
+                    totals_odds = None
+                    if odds_conn:
+                        totals_odds = get_fixture_totals_odds(
+                            odds_conn,
+                            fixture.date_utc[:10],
+                            fixture.home,
+                            fixture.away,
+                            leg_line,
+                            allow_nearby_date=True,
+                        )
+
+                    leg_odd = None
+                    if totals_odds and side in totals_odds:
+                        leg_odd = totals_odds.get(side)
+
+                    if leg_odd is None:
+                        continue
+
+                    odds_bets += leg_stake
+                    leg_win_units, leg_push_units = settle_totals_leg(total_goals, side, leg_line)
+
+                    odd_value = float(leg_odd)
+                    if odd_value > 0:
+                        win_return = 1 + (odd_value / 100)
                     else:
-                        returns += 1 + (100 / abs(odd))
+                        win_return = 1 + (100 / abs(odd_value))
+
+                    returns += (leg_stake * leg_win_units * win_return) + (leg_stake * leg_push_units)
+                continue
 
         missing_odds = max(0, graded_picks - odds_bets)
         participant_rows.append((label, wins, total_matches, odds_bets, returns, missing_odds))
+
+    if odds_conn:
+        odds_conn.close()
 
     if start_date == end_date:
         score_label = start_date.strftime("%Y-%m-%d")
@@ -1312,9 +1799,34 @@ def score_for_date_range(args: argparse.Namespace) -> None:
         session = None
         x_client = None
 
+    def preview_pick_text(pick_spec: dict[str, Any] | None, fixture: Fixture) -> str:
+        if not pick_spec:
+            return "N/A"
+        market = str(pick_spec.get("market", "")).upper()
+        if market == "1X2":
+            pick = str(pick_spec.get("pick", "")).strip().upper()
+            return human_pick_text(pick, fixture.home, fixture.away) or pick or "N/A"
+        if market == "TOTAL_GOALS":
+            return str(pick_spec.get("pick", "")).strip() or "N/A"
+        return "N/A"
+
     if dry_run:
         score_post = {"uri": f"dryrun://score/{start_date.isoformat()}", "cid": "dryrun-score-cid"}
         x_score_post = {"id": f"dryrun-x-score-{start_date.isoformat()}"}
+        print("\n[DRY-RUN] Picks being scored:")
+        for row in final_rows:
+            fixture = row["fixture"]
+            item = row["item"]
+            my_spec = normalize_my_pick_for_scoring(str(item.get("my_pick", "")))
+            gemini_spec = pick_spec_from_ai_pick_data(item.get("ai_picks", {}).get("gemini", {}))
+            claude_spec = pick_spec_from_ai_pick_data(item.get("ai_picks", {}).get("claude", {}))
+            chatgpt_spec = pick_spec_from_ai_pick_data(item.get("ai_picks", {}).get("chatgpt", {}))
+
+            print(f"- {fixture.home} vs {fixture.away}")
+            print(f"  Minvest: {preview_pick_text(my_spec, fixture)}")
+            print(f"  Gemini: {preview_pick_text(gemini_spec, fixture)}")
+            print(f"  Claude: {preview_pick_text(claude_spec, fixture)}")
+            print(f"  ChatGPT: {preview_pick_text(chatgpt_spec, fixture)}")
         print("\n[DRY-RUN] Scoreboard reply preview:")
         print(clamp_post(score_text))
         if post_bluesky:
@@ -1394,9 +1906,10 @@ def build_parser() -> argparse.ArgumentParser:
     fixtures.set_defaults(func=list_fixtures_cmd)
 
     publish = subparsers.add_parser("publish", help="Generate picks and publish to Bluesky")
-    publish.add_argument("--day", default="today", choices=["today", "tomorrow", "yesterday"])
+    publish.add_argument("--day", default="today", help="Target day: 'yesterday', 'today', 'tomorrow', or 'YYYY-MM-DD'")
     publish.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     publish.add_argument("--dry-run", action="store_true", help="Print post previews without posting to Bluesky")
+    publish.add_argument("--test-mode", action="store_true", help="Disable cache I/O and tag created tracking rows as test data")
     publish.add_argument("--no-cache", action="store_true", help="Disable local AI-pick cache and force fresh provider calls")
     publish.add_argument("--picks-file", help="Path to text file with your picks text. Supports keyed lines (fixture_id=...) and free-form lines in fixture order")
     publish.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
@@ -1414,6 +1927,12 @@ def build_parser() -> argparse.ArgumentParser:
     score.add_argument("--end-date", help="End date for scoring range (YYYY-MM-DD)")
     score.add_argument("--session", default="all", choices=["all", "morning", "afternoon"], help="Session filter by local kickoff time (default: all)")
     score.add_argument("--dry-run", action="store_true", help="Print score reply previews without posting to Bluesky")
+    score.add_argument("--test-mode", action="store_true", help="Score only test-mode tracking rows (normal runs ignore test rows)")
+    score.add_argument(
+        "--sim-results-file",
+        dest="sim_results_file",
+        help="Path to JSON fixture score overrides (test-mode + dry-run only).",
+    )
     score.add_argument("--platform", default="both", choices=["bluesky", "x", "both"], help="Platform(s) to post to (default: both)")
 
     score.add_argument(
